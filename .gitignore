@@ -9,6 +9,6 @@ node_modules/
 .env*.local
 
 # Data cache (grande, regenerável)
-all_players_data/*.json
+raw_data/*.json
 
 CLAUDE.md
