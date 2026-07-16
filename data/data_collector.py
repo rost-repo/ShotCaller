@@ -4,12 +4,24 @@ from pathlib import Path
 import re
 from nba_api.stats.endpoints import leagueleaders, shotchartdetail, commonplayerinfo
 import pandas as pd
+import argparse
 
 SEASON = "2025-26"
 
 MIN_GAMES_FOR_POOL = 30 
 POOL_SIZE = 130
 RAW_DIR = Path("raw_data")
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Collects the data for the NBA Players.")
+    parser.add_argument(
+        "--retry-failed",
+        action="store_true",
+        help="Retry's failed players.",
+    )
+    return parser.parse_args()
+
+
 
 def get_top_players():
     """Returns the top130 players for the season."""
@@ -77,41 +89,49 @@ def fetch_player_data(player, max_attempts=3):
             time.sleep(wait)
     return None 
 
-def collect_all():
+def collect_players(players):
+    """Baixa uma lista de jogadores; devolve os que falharam definitivamente."""
+    failed = []
+    total = len(players)
+    for index, player in enumerate(players, start=1):
+        out_file = RAW_DIR / f"{slugify(player['PLAYER'])}-{player['PLAYER_ID']}.json"
+        if out_file.exists():
+            #print(f"{player['PLAYER']} file already exists...") #DEBUG
+            continue
+
+        print(f"[{index}/{total}] Downloading {player['PLAYER']}...")
+        data = fetch_player_data(player)
+        if data is None:
+            print(f"{player['PLAYER']} failed...")
+            failed.append(player)   # guarda o dicionário inteiro, não só o nome!
+            continue
+
+        with open(out_file, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        time.sleep(1.5)
+    return failed
+
+def collect_all(retry_failed=False):
     RAW_DIR.mkdir(exist_ok=True)
 
     players = get_top_players()
     league_file = RAW_DIR / "league_averages.json"
-    failed = []
-
     if not league_file.exists():
         averages = get_league_averages()
         with open(league_file, "w", encoding="utf-8") as f:
             json.dump(averages, f)
-    else:
-        pass
-    
-    for index, player in enumerate(players, start=1):
-        out_file = RAW_DIR / f"{slugify(player['PLAYER'])}-{player['PLAYER_ID']}.json"
-        if out_file.exists():
-            print(f"{player['PLAYER']} file already exists...")
-            continue
-        
-        print(f"[{index}/{len(players)}] Downloading {player['PLAYER']}...")
-        
-        data = fetch_player_data(player)
-        if data is None:
-            failed.append(player["PLAYER"])
-            continue
-        
-        with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(data, f)        
-        time.sleep(1.5)   # pausa educada entre jogadores
+            
+    failed = collect_players(players)
+
+    if failed and retry_failed:
+        print(f"\nRefazendo {len(failed)} jogador(es) que falharam...")
+        failed = collect_players(failed)   # segunda passada, só nos que sobraram
+
     if failed:
-        print(f"\\nFailed: {failed}")
+        print(f"\nFalharam definitivamente: {[p['PLAYER'] for p in failed]}")
     else:
-        print("\\nFetching completed without fails.")
+        print("\nColeta completa, sem falhas.")
 
 if __name__ == "__main__":
-    collect_all()
-    
+    args = parse_args()
+    collect_all(retry_failed=args.retry_failed)
