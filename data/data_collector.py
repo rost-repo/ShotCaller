@@ -11,6 +11,7 @@ SEASON = "2025-26"
 MIN_GAMES_FOR_POOL = 30 
 POOL_SIZE = 130
 RAW_DIR = Path("raw_data")
+AVERAGES_DIR = Path("league_averages")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Collects the data for the NBA Players.")
@@ -113,9 +114,12 @@ def collect_players(players):
 
 def collect_all(retry_failed=False):
     RAW_DIR.mkdir(exist_ok=True)
+    AVERAGES_DIR.mkdir(exist_ok=True)
 
     players = get_top_players()
-    league_file = RAW_DIR / "league_averages.json"
+    league_file = AVERAGES_DIR / "league_averages.json"
+
+    
     if not league_file.exists():
         averages = get_league_averages()
         with open(league_file, "w", encoding="utf-8") as f:

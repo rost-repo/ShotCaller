@@ -10,5 +10,8 @@ node_modules/
 
 # Data cache (grande, regenerável)
 raw_data/*.json
+league_averages
+
+web/public/data/*
 
 CLAUDE.md
