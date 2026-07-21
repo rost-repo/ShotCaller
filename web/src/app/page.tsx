@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";  
-import type { GameIndex, PlayerSummary, Hex } from "@/types";
+import type { GameIndex, PlayerSummary, Hex } from "@/lib/types";
 import { pickPlayerIndex, randomSeed } from "@/lib/random";
+import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
+import GuessInput from "@/components/GuessInput";
+import { hexPath } from "@/lib/hexPath";
 
 export default function Home() {
   const [index, setIndex] = useState<GameIndex | null>(null);
   const [secretPlayer, setSecretPlayer] = useState<PlayerSummary | null>(null);
-  const [secretHexes, setSecretHexes] = useState<Hex[], null>(null);
+  const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
+  const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
 
   useEffect( () => {
     async function boot() {
@@ -37,8 +41,15 @@ export default function Home() {
       <p className="mt-2 text-gray-600">
         {index.players.length} jogadores no pool {" "}
         {secretHexes.length} hexagonos para o jogador secreto.
+        {secretPlayer.name} é o jgoador.
       </p>
-      <p className="mt-4 text-sm text-red-400">DEBUG: {secretPlayer.name}</p>
+      <ShotChart
+        hexes={secretHexes}
+        leagueAverages={index.leagueAverages}
+        leagueOverallFg={index.leagueOverallFg}
+        onZoneHover={setZoneInfo}
+      />
+      <GuessInput players={index.players} onGuess={(name) => console.log("Palpite:", name)} />
     </main>
     );
 
