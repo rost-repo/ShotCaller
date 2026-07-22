@@ -5,7 +5,7 @@ import type { GameIndex, PlayerSummary, Hex } from "@/lib/types";
 import { pickPlayerIndex, randomSeed } from "@/lib/random";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
-import { hexPath } from "@/lib/hexPath";
+import ZonePanel from "@/components/ZonePanel";
 
 export default function Home() {
   const [index, setIndex] = useState<GameIndex | null>(null);
@@ -49,6 +49,7 @@ export default function Home() {
         leagueOverallFg={index.leagueOverallFg}
         onZoneHover={setZoneInfo}
       />
+      {zoneInfo && <ZonePanel  info = {zoneInfo} />}
       <GuessInput players={index.players} onGuess={(name) => console.log("Palpite:", name)} />
     </main>
     );

@@ -65,7 +65,11 @@ def build_player_hexes(shots, hex_zone_map):
 #FILE FUNCTIONS
 def load_raw_players():
     files = [f for f in RAW_DIR.glob("*.json")]
-    return [json.loads(f.read_text(encoding="utf-8")) for f in files]
+    players = [json.loads(f.read_text(encoding="utf-8")) for f in files]
+    for player in players:
+            for shot in player["shots"]:
+                shot["LOC_X"] = -shot["LOC_X"]
+    return players
 
 def build_league_averages():
     raw = json.loads((AVERAGES_DIR / "league_averages.json").read_text(encoding="utf-8"))

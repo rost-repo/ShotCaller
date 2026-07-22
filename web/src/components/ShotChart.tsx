@@ -118,7 +118,6 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
             <CourtLines />
             <g transform={`translate(${COURT_W / 2}, ${COURT_H - 52.5}) scale(1, -1)`}>
 
-            {/* Camada de hit-test: invisível, tamanho fixo da grade real (7.5), sem vãos */}
             {drawn.map((h) => (
                 <path
                 key={`hit-${h.key}`}
@@ -130,7 +129,6 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
                 />
             ))}
 
-            {/* Camada visual: hexágonos coloridos, SEM eventos de mouse próprios */}
             {drawn.map((h) => (
                 <path
                 key={h.key}
@@ -144,7 +142,6 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
                 />
             ))}
 
-            {/* Camada de destaque (igual já tínhamos) */}
             {hoveredZone && drawn.filter((h) => h.zone === hoveredZone).map((h) => (
                 <path
                 key={`hl-${h.key}`}
