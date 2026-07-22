@@ -1,7 +1,7 @@
 import type { ZoneInfo } from "./ShotChart";
 
 interface ZonePanelProps {
-    info: ZoneInfo | null;
+    info: ZoneInfo;
 }
 
 export default function ZonePanel( { info } : ZonePanelProps ) {

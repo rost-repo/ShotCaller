@@ -50,7 +50,12 @@ export default function Home() {
         onZoneHover={setZoneInfo}
       />
       {zoneInfo && <ZonePanel  info = {zoneInfo} />}
-      <GuessInput players={index.players} onGuess={(name) => console.log("Palpite:", name)} />
+      <GuessInput
+        playerNames={index.players.map((p) => p.name)}
+        disabledNames={[]}
+        onGuess={(name) => console.log("Guess:", name)}
+        disabled={false}
+      />
     </main>
     );
 
