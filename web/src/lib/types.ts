@@ -18,6 +18,8 @@ export interface PlayerSummary {
     position: string;
     age: number; 
     conference: string;
+    rookieYear: number;
+    jersey: string;
 }
 
 export interface GameIndex {

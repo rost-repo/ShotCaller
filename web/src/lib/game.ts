@@ -34,3 +34,21 @@ export function applyGuess(state: GameState, guessName: string): GameState{
     return {...state, guesses, status };
 }
 
+export interface HintDefinition {
+    label: string;
+    getValue: (player: PlayerSummary) => string;
+}
+
+export const HINTS: HintDefinition[] = [
+    { label: "Idade", getValue: (p) => String(p.age) },
+    { label: "Posição", getValue: (p) => p.position },
+    { label: "Conferência", getValue: (p) => p.conference },
+    { label: "Número da camisa", getValue: (p) => p.jersey },
+    { label: "Ano de rookie", getValue: (p) => String(p.rookieYear) },
+];
+
+export const MAX_HINTS = HINTS.length;   // nunca dessincroniza — vem do array acima
+
+export function canUnlockHint(wrongGuesses: number, hintsUsed: number): boolean {
+    return wrongGuesses > 0 && hintsUsed < MAX_HINTS;
+}

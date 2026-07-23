@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { applyGuess, calculateScore, MAX_GUESSES, type GameState } from "./game";
+import { applyGuess, calculateScore, MAX_GUESSES, canUnlockHint, type GameState } from "./game";
 import type { PlayerSummary } from "./types";
 import { Smokum } from "next/font/google";
 
 const CORRECT_PLAYER = "Nikola Jokic" 
 
 const fakePlayer = (name: string): PlayerSummary => ({
-    id: 1, name, team: "DEN", position: "C", age: 30, conference: "West",
+    id: 1, name, team: "DEN", position: "C", age: 30, conference: "West", rookieYear: 0, jersey: "1"
 });
 
 const newGame = (): GameState => ({
@@ -59,7 +59,7 @@ describe("calculateScore", ()=> {
     it("never under zero", ()=> {
         let s = { ...newGame(), hintsUsed: 4 };
         for (let i = 0; i < MAX_GUESSES - 1; i++) s = applyGuess(s, `Wrong Player ${i}`);
-        s = applyGuess(s, "Nikola Jokic");
+        s = applyGuess(s, CORRECT_PLAYER);
         expect(s.status).toBe("won");
         expect(calculateScore(s)).toBe(0);
     });
@@ -71,3 +71,16 @@ describe("calculateScore", ()=> {
     });
 });
 
+describe("canUnlockHint", () => {
+    it("bloqueia sem nenhum erro", () => {
+        expect(canUnlockHint(0, 0)).toBe(false);
+    });
+
+    it("libera depois de um erro, se ainda não usou todas as dicas", () => {
+        expect(canUnlockHint(1, 0)).toBe(true);
+    });
+
+    it("bloqueia depois de usar o máximo de dicas", () => {
+        expect(canUnlockHint(5, 3)).toBe(false);
+    });
+});
