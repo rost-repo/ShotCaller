@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";  
-import type { GameIndex, PlayerSummary, Hex } from "@/lib/types";
+import type { GameIndex, PlayerSummary, Hex, HexStats } from "@/lib/types";
 import { pickPlayerIndex, randomSeed } from "@/lib/random";
-import { applyGuess, calculateScore, MAX_GUESSES, type GameState } from "@/lib/game";
+import { applyGuess, MAX_GUESSES, type GameState } from "@/lib/game";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
 import ZonePanel from "@/components/ZonePanel";
@@ -14,6 +14,7 @@ export default function Home() {
   const [game, setGame] = useState<GameState | null>(null);
   const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
   const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
+  const [hexStats, setHexStats] = useState<HexStats | null>(null);
 
   const startNewGame = useCallback( async (idx: GameIndex) => {
     setSecretHexes(null);
@@ -33,27 +34,32 @@ export default function Home() {
         setIndex(idx);
         startNewGame(idx);
       });
+    
+    fetch("/data/hex_stats.json")
+      .then((r) => r.json())
+      .then((stats: HexStats) => setHexStats(stats))
+
   }, [startNewGame]);
 
-  if (!index || !game || !secretHexes) {
+  if (!index || !game || !secretHexes || !hexStats) {
     return <p className="p-8 text-gray-500">Loading game files...</p>;
   }
-
-  const wrongGuesses = game.guesses.filter((g) => g !== game.secretPlayer.name).length;
 
   return (
     <main className="mx-auto max-w-3xl p-8">
       <header className="flex items-baseline justify-between">
         <h1 className="text-3xl font-extrabold">Shotcaller 🏀</h1>
         <p className="text-lg">
-          Pontos: <span className="font-bold">{calculateScore(game)}</span> ·
-          Palpites: {game.guesses.length}/{MAX_GUESSES}
+          Guesses: {game.guesses.length}/{MAX_GUESSES}
         </p>
+        <details> Jogador: {game.secretPlayer.name} </details>
+
       </header>
       <ShotChart
         hexes={secretHexes}
         leagueAverages={index.leagueAverages}
         leagueOverallFg={index.leagueOverallFg}
+        hexStats={hexStats}
         onZoneHover={setZoneInfo}
       />
       {zoneInfo && <ZonePanel  info = {zoneInfo} />}
@@ -68,8 +74,6 @@ export default function Home() {
           <HintPanel
             player={game.secretPlayer}
             hintsUsed={game.hintsUsed}
-            wrongGuesses={wrongGuesses}
-            onUseHint={() => setGame((g) => g && { ...g, hintsUsed: g.hintsUsed + 1 })}
           />
           <ul className="space-y-1">
             {game.guesses.map((name) => (
@@ -80,9 +84,9 @@ export default function Home() {
       ) : (
         <div className="rounded-xl border p-6 text-center">
           <p className="text-2xl font-bold">
-            {game.status === "won" ? `🎉 Acertou! ${calculateScore(game)} pontos.` : "😔 Fim de jogo."}
+            {game.status === "won" ? `🎉 Congratulations! You guessed the player in ${game.guesses.length} guesses!.` : "😔 Game Over."}
           </p>
-          <p className="mt-2 text-gray-600">Era <strong>{game.secretPlayer.name}</strong>.</p>
+          <p className="mt-2 text-gray-600">It was <strong>{game.secretPlayer.name}</strong>.</p>
           <button
             onClick={() => startNewGame(index)}
             className="mt-4 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"

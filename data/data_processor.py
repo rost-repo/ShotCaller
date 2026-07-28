@@ -1,4 +1,4 @@
-import math
+import math, statistics
 from collections import Counter
 import json
 from pathlib import Path
@@ -9,12 +9,13 @@ ROOT_DIR = SCRIPT_DIR.parent
 RAW_DIR = ROOT_DIR / "raw_data"
 AVERAGES_DIR = ROOT_DIR / "league_averages"
 OUTPUT_DIR = ROOT_DIR / "web" / "public" / "data"
+SHOTS_DIR = ROOT_DIR / "all_shots"
 
 HEX_RADIUS = 7.5   # 0.75 feet
 DX = HEX_RADIUS * 2 * math.sin(math.pi / 3)
 DY = HEX_RADIUS * 1.5
 
-
+MIN_ATTEMPTS_FOR_HEX_STATS = 3
 
 #HEXAGONS FUNCTIONS
 def hexagon_center(x, y):
@@ -32,20 +33,25 @@ def hexagon_center(x, y):
                 best, best_dist = (cx, cy), dist
     return best
 
+def round_half_up(x):
+    """Arredonda para o inteiro mais próximo, com .5 sempre para cima — equivalente ao Math.round() do JS."""
+    return int(math.floor(x + 0.5))
+
 def hexagon_id(x, y):
     """Returns the hexagon for a position (shot)"""
     cx, cy = hexagon_center(x, y)
-    return f"{round(cx)},{round(cy)}"
+    return f"{round_half_up(cx)},{round_half_up(cy)}"
 
 def build_hex_zone_map(all_shots):
     """Pools all shots from the players to devide the zone for each hexagon by majority vote"""
     zone_votes = {}
-    for shot in all_shots:
-        hid = hexagon_id(shot["LOC_X"], shot["LOC_Y"])
-        zone = f"{shot['SHOT_ZONE_AREA']} | {shot['SHOT_ZONE_RANGE']}"
-        if hid not in zone_votes:
-            zone_votes[hid] = Counter()
-        zone_votes[hid][zone] += 1
+    for player_shots in all_shots:
+        for shot in player_shots:
+            hid = hexagon_id(shot["LOC_X"], shot["LOC_Y"])
+            zone = f"{shot['SHOT_ZONE_AREA']} | {shot['SHOT_ZONE_RANGE']}"
+            if hid not in zone_votes:
+                zone_votes[hid] = Counter()
+            zone_votes[hid][zone] += 1
     return {hid: counter.most_common(1)[0][0] for hid, counter in zone_votes.items()}
 
 def build_player_hexes(shots, hex_zone_map):
@@ -53,7 +59,7 @@ def build_player_hexes(shots, hex_zone_map):
     hexagons = {}
     for shot in shots:
         cx, cy = hexagon_center(shot["LOC_X"], shot["LOC_Y"])
-        hid = f"{round(cx)},{round(cy)}"
+        hid = f"{round_half_up(cx)},{round_half_up(cy)}"
         if hid not in hexagons:
             hexagons[hid] = {"cx": cx, "cy": cy, "att": 0, "made": 0}
         hexagons[hid]["att"] += 1
@@ -62,7 +68,34 @@ def build_player_hexes(shots, hex_zone_map):
         {**hexagon, "zone": hex_zone_map.get(key, "Unknown Zone")} for key, hexagon in hexagons.items()
     ]
 
+def build_hex_league_stats(all_shots):
+    hex_totals = {}
+    for player_shots in all_shots:
+        for shot in player_shots:
+            hid = hexagon_id(shot["LOC_X"], shot["LOC_Y"])
+            bucket = hex_totals.setdefault(hid, {"att": 0, "made": 0})
+            bucket["att"] += 1
+            bucket["made"] += shot["SHOT_MADE_FLAG"]
+
+    hex_stats = {}
+    for hid, totals in hex_totals.items():
+        if totals["att"] < MIN_ATTEMPTS_FOR_HEX_STATS:
+            continue
+        mean = totals["made"] / totals["att"]
+        hex_stats[hid] = {"mean": round(mean, 4), "n": totals["att"]}
+
+    return hex_stats
+
+
 #FILE FUNCTIONS
+
+def load_all_shots():
+    file = json.loads((SHOTS_DIR / "all_shots.json").read_text(encoding="utf-8"))
+    for player_shots in file:
+        for shot in player_shots:
+            shot["LOC_X"] = -shot["LOC_X"]
+    return file
+
 def load_raw_players():
     files = [f for f in RAW_DIR.glob("*.json")]
     players = [json.loads(f.read_text(encoding="utf-8")) for f in files]
@@ -100,6 +133,7 @@ def _conference_from_team(abbreviation):
 
 def _player_summary(raw):
     info = raw["info"]
+    stats = raw["season_stats"]
     return {
         "id": raw["id"],
         "name": raw["name"],
@@ -110,15 +144,20 @@ def _player_summary(raw):
         "rookieYear": info.get("FROM_YEAR"),
         "height" : info.get("HEIGHT"),
         "jersey" : info.get("JERSEY"),
+        "stats": {
+            "pts": stats.get("PTS"),
+            "ast": stats.get("AST"),
+            "reb": stats.get("REB"),},
     }
 
 def main():
     raw_players = load_raw_players()
     league_averages, league_overall = build_league_averages()
     
-    all_shots = [shot for p in raw_players for shot in p["shots"]]
+    all_shots = load_all_shots()
     hex_zone_map = build_hex_zone_map(all_shots)
-    
+    hex_league_stats = build_hex_league_stats(all_shots)
+
     players_dir = OUTPUT_DIR / "players"
     players_dir.mkdir(parents=True, exist_ok=True)
     
@@ -129,6 +168,9 @@ def main():
         hexes = build_player_hexes(raw["shots"], hex_zone_map)
         with open(players_dir / f"{raw['id']}.json", "w", encoding="utf-8") as f:
             json.dump({"id": raw["id"], "hexes": hexes}, f)
+    
+    with open(OUTPUT_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
+        json.dump(hex_league_stats, f)    
     
     index = {
         "season": "2025-26",

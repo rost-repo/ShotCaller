@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import { scaleQuantile, scaleQuantize } from "d3-scale";
 import { hexPath } from "../lib/hexPath";
-import type { Hex } from "@/lib/types";
+import type { Hex, HexStats } from "@/lib/types";
 
 const COURT_W = 500;
 const COURT_H = 470;
-const RADIUS_STEPS = [1.5, 2.5, 4, 5.5, 7.2];
+const RADIUS_STEPS = [1.5, 2.5, 3.5, 4.5, 5.5, 7.2];
 const PALETTE = ["#5458A2", "#6689BB", "#FADC97", "#F08460", "#B02B48"];
 
 const THREE_PT_HALF_ANGLE = Math.atan(220 / 89.5);
@@ -27,6 +27,7 @@ interface ShotChartProps {
     hexes : Hex[];
     leagueAverages : Record<string,number>;
     leagueOverallFg: number;
+    hexStats: HexStats;
     onZoneHover: (info: ZoneInfo | null) => void
 }
 
@@ -39,7 +40,7 @@ export interface ZoneInfo {
     isFallback: boolean;
 }
 
-export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, onZoneHover }: ShotChartProps) {
+export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, hexStats, onZoneHover }: ShotChartProps) {
 
     const [hoveredZone, setHoveredZone] = useState<string | null>(null);
 
@@ -57,8 +58,8 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
     }, [hexes]);
     
     const color = useMemo(
-        () => scaleQuantize<string>().domain([-0.15, 0.15]).range(PALETTE),[]
-    );
+    () => scaleQuantize<string>().domain([-0.15, 0.15]).range(PALETTE),
+    []);
 
     const zoneGroups = useMemo(
         () => {
@@ -75,18 +76,20 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
         () =>
             hexes.map((h) => {
                 const playerFg = h.att === 0 ? 0 : h.made / h.att;
-                const zoneAvg = leagueAverages[h.zone];
-                const isFallback = zoneAvg === undefined;
-                const leagueFg = isFallback ? leagueOverallFg : zoneAvg;
+                
+                const hid = `${Math.round(h.cx)},${Math.round(h.cy)}`;
+                const hexStat = hexStats[hid];
+                const mean = hexStat ? hexStat.mean : leagueOverallFg;
+
                 return {
                     key: `${h.cx},${h.cy}`,
                     zone: h.zone,
                     path: hexPath(radiusScale(h.att)),
                     cx: h.cx,
                     cy: h.cy,
-                    fill: color(playerFg - leagueFg)
+                    fill: color(playerFg - mean),
                 };
-            }), [hexes, leagueAverages, leagueOverallFg, radiusScale, color]);
+            }), [hexes, hexStats, leagueOverallFg, radiusScale, color]);
     
     function handleHover(zone: string | null) {
         setHoveredZone(zone);
@@ -114,47 +117,49 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, on
     }
 
     return (
-        <svg viewBox={`0 0 ${COURT_W} ${COURT_H}`} className="w-full max-w-xl">
-            <CourtLines />
-            <g transform={`translate(${COURT_W / 2}, ${COURT_H - 52.5}) scale(1, -1)`}>
+        <div> 
+            <svg viewBox={`0 0 ${COURT_W} ${COURT_H}`} className="w-full max-w-xl">
+                <CourtLines />
+                <g transform={`translate(${COURT_W / 2}, ${COURT_H - 52.5}) scale(1, -1)`}>
 
-            {drawn.map((h) => (
-                <path
-                key={`hit-${h.key}`}
-                d={hexPath(7.5)}
-                transform={`translate(${h.cx}, ${h.cy})`}
-                fill="transparent"
-                onMouseEnter={() => handleHover(h.zone)}
-                onMouseLeave={() => handleHover(null)}
-                />
-            ))}
+                {drawn.map((h) => (
+                    <path
+                    key={`hit-${h.key}`}
+                    d={hexPath(7.5)}
+                    transform={`translate(${h.cx}, ${h.cy})`}
+                    fill="transparent"
+                    onMouseEnter={() => handleHover(h.zone)}
+                    onMouseLeave={() => handleHover(null)}
+                    />
+                ))}
 
-            {drawn.map((h) => (
-                <path
-                key={h.key}
-                d={h.path}
-                transform={`translate(${h.cx}, ${h.cy})`}
-                fill={h.fill}
-                stroke="#fff"
-                strokeWidth={0.5}
-                opacity={hoveredZone && h.zone !== hoveredZone ? 0.35 : 1}
-                pointerEvents="none"
-                />
-            ))}
+                {drawn.map((h) => (
+                    <path
+                    key={h.key}
+                    d={h.path}
+                    transform={`translate(${h.cx}, ${h.cy})`}
+                    fill={h.fill}
+                    stroke="#fff"
+                    strokeWidth={0.5}
+                    opacity={hoveredZone && h.zone !== hoveredZone ? 0.35 : 1}
+                    pointerEvents="none"
+                    />
+                ))}
 
-            {hoveredZone && drawn.filter((h) => h.zone === hoveredZone).map((h) => (
-                <path
-                key={`hl-${h.key}`}
-                d={h.path}
-                transform={`translate(${h.cx}, ${h.cy})`}
-                fill="none"
-                stroke="#111827"
-                strokeWidth={1.5}
-                pointerEvents="none"
-                />
-            ))}
-            </g>
-        </svg>
+                {hoveredZone && drawn.filter((h) => h.zone === hoveredZone).map((h) => (
+                    <path
+                    key={`hl-${h.key}`}
+                    d={h.path}
+                    transform={`translate(${h.cx}, ${h.cy})`}
+                    fill="none"
+                    stroke="#111827"
+                    strokeWidth={1.5}
+                    pointerEvents="none"
+                    />
+                ))}
+                </g>
+            </svg>
+        </div>
     );
 }
 
