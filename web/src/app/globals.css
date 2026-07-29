@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: oklch(0.96 0.02 75);
+  --surface: oklch(0.97 0.022 78);
+  --surface-2: oklch(0.91 0.03 70);
+  --hairline: oklch(0.88 0.008 260);
+  --fg: oklch(0.14 0.015 55);
+  --fg-muted: oklch(0.4 0.03 55);
+  --primary: oklch(0.58 0.19 45);
+  --primary-tint: oklch(0.9 0.06 55);
+  --on-primary: oklch(0.99 0.005 55);
+  --success: oklch(0.5 0.13 150);
+  --success-tint: oklch(0.92 0.05 150);
+  --danger: oklch(0.5 0.17 20);
+  --danger-tint: oklch(0.93 0.05 20);
+  --ink: oklch(0.12 0.015 55);
+  --ink-muted: oklch(0.42 0.025 55);
+  --paper: oklch(0.99 0.01 80);
+}
+
+.dark {
+  --bg: oklch(0.24 0.022 55);
+  --surface: oklch(0.28 0.024 55);
+  --surface-2: oklch(0.32 0.026 55);
+  --hairline: oklch(0.42 0.03 55);
+  --fg: oklch(0.96 0.012 75);
+  --fg-muted: oklch(0.72 0.02 60);
+  --primary: oklch(0.74 0.17 55);
+  --primary-tint: oklch(0.4 0.08 55);
+  --on-primary: oklch(0.16 0.02 55);
+  --success: oklch(0.74 0.14 150);
+  --success-tint: oklch(0.36 0.06 150);
+  --danger: oklch(0.7 0.15 20);
+  --danger-tint: oklch(0.38 0.08 20);
+  --ink: oklch(0.1 0.012 55);
+  --ink-muted: oklch(0.4 0.025 55);
+  --paper: oklch(0.87 0.03 75);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-hairline: var(--hairline);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-primary: var(--primary);
+  --color-primary-tint: var(--primary-tint);
+  --color-on-primary: var(--on-primary);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-paper: var(--paper);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--ff-display);
+  --font-sans: var(--ff-body);
+  --font-stat: var(--ff-stat);
+  --font-wordmark: var(--ff-wordmark);
+
+  --shadow-sticker-sm: 2px 2px 0 var(--ink);
+  --shadow-sticker: 4px 4px 0 var(--ink);
+  --shadow-sticker-md: 5px 5px 0 var(--ink);
+  --shadow-sticker-lg: 6px 6px 0 var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--ff-body), system-ui, sans-serif;
+  transition: background 0.2s, color 0.2s;
 }

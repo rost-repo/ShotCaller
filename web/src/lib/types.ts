@@ -6,6 +6,13 @@ export interface Hex {
     zone: string;
 }
 
+export interface HexLeagueStat {
+    mean: number;
+    n: number;
+}
+
+export type HexStats = Record<string, HexLeagueStat>;
+
 export interface PlayerHexes {
     id: number;
     hexes: Hex[];
@@ -20,6 +27,12 @@ export interface PlayerSummary {
     conference: string;
     rookieYear: number;
     jersey: string;
+    height: string;
+    stats: {
+        pts: number;
+        ast: number;
+        reb: number;
+    };
 }
 
 export interface GameIndex {
