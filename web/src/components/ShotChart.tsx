@@ -118,7 +118,7 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, he
 
     return (
         <div> 
-            <svg viewBox={`0 0 ${COURT_W} ${COURT_H}`} className="w-full max-w-xl">
+            <svg viewBox={`0 0 ${COURT_W} ${COURT_H}`} className="w-full ">
                 <CourtLines />
                 <g transform={`translate(${COURT_W / 2}, ${COURT_H - 52.5}) scale(1, -1)`}>
 

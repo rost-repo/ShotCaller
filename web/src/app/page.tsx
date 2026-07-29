@@ -1,13 +1,16 @@
 "use client";
 
+import { Target } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";  
 import type { GameIndex, PlayerSummary, Hex, HexStats } from "@/lib/types";
-import { pickPlayerIndex, randomSeed } from "@/lib/random";
-import { applyGuess, MAX_GUESSES, type GameState } from "@/lib/game";
+import { pickPlayerIndex, randomSeed, dailySeed } from "@/lib/random";
+import { applyGuess, MAX_GUESSES, getWrongGuesses, getGuessResults, type GameState } from "@/lib/game";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
 import ZonePanel from "@/components/ZonePanel";
 import HintPanel from "@/components/HintPanel";
+import ThemeToggle from "@/components/ThemeToggle";
+import GuessPips from "@/components/GuessPips";
 
 export default function Home() {
   const [index, setIndex] = useState<GameIndex | null>(null);
@@ -18,7 +21,7 @@ export default function Home() {
 
   const startNewGame = useCallback( async (idx: GameIndex) => {
     setSecretHexes(null);
-    const seed = randomSeed();
+    const seed = dailySeed();
     const secret = idx.players[pickPlayerIndex(idx.players.length, seed)]
     setGame({ secretPlayer: secret, guesses: [], hintsUsed: 0, status: "playing"});
 
@@ -44,25 +47,50 @@ export default function Home() {
   if (!index || !game || !secretHexes || !hexStats) {
     return <p className="p-8 text-gray-500">Loading game files...</p>;
   }
+  const statusText =
+    game.status === "playing"
+      ? `Guess ${game.guesses.length + 1} of ${MAX_GUESSES}`
+      : game.status === "won"
+        ? "Solved"
+        : "Out of guesses";
+
+  const wrongGuesses = getWrongGuesses(game);
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <header className="flex items-baseline justify-between">
-        <h1 className="text-3xl font-extrabold">Shotcaller 🏀</h1>
-        <p className="text-lg">
-          Guesses: {game.guesses.length}/{MAX_GUESSES}
-        </p>
-        <details> Jogador: {game.secretPlayer.name} </details>
-
+    <main className="mx-auto flex w-full max-w-230 flex-col gap-4 px-5 pt-7 pb-20">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex -rotate-2 items-center gap-[9px] rounded-xl border-[3px] border-ink bg-primary py-[5px] pr-[14px] pl-[5px] shadow-sticker">
+          <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-ink">
+            <Target size={18} className="text-primary" />
+          </div>
+          <span className="font-display text-[19px] tracking-[-0.01em] text-ink">
+            SHOTCALLER
+          </span>
+        </div>
+        <div>
+          <h1 className="font-display mb-1.5 text-[19px] tracking-[-0.01em]">
+            GUESS THE PLAYER
+          </h1>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold text-fg-muted">{statusText}</span>
+            <GuessPips results={getGuessResults(game)} total={MAX_GUESSES} />
+          </div>
+        </div>
+        <ThemeToggle></ThemeToggle>
       </header>
-      <ShotChart
-        hexes={secretHexes}
-        leagueAverages={index.leagueAverages}
-        leagueOverallFg={index.leagueOverallFg}
-        hexStats={hexStats}
-        onZoneHover={setZoneInfo}
-      />
-      {zoneInfo && <ZonePanel  info = {zoneInfo} />}
+
+      <div className="flex flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-sticker-lg">
+        <div className="relative flex min-h-60 flex-col justify-center p-4">
+        <ShotChart
+          hexes={secretHexes}
+          leagueAverages={index.leagueAverages}
+          leagueOverallFg={index.leagueOverallFg}
+          hexStats={hexStats}
+          onZoneHover={setZoneInfo}
+        />
+        {zoneInfo && <ZonePanel  info = {zoneInfo} />}
+        </div>
+      </div>
       {game.status === "playing" ? (
         <>
           <GuessInput
@@ -76,7 +104,7 @@ export default function Home() {
             hintsUsed={game.hintsUsed}
           />
           <ul className="space-y-1">
-            {game.guesses.map((name) => (
+            {wrongGuesses.map((name) => (
               <li key={name} className="rounded bg-red-50 px-3 py-2 text-red-700">✗ {name}</li>
             ))}
           </ul>

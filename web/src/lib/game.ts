@@ -26,6 +26,22 @@ export const HINTS: HintDefinition[] = [
 
 export const MAX_HINTS = HINTS.length;
 
+export interface GuessResult {
+    name: string;
+    correct: boolean;
+}
+
+export function getGuessResults(state: GameState): GuessResult[] {
+    return state.guesses.map((name) => ({
+        name,
+        correct: name === state.secretPlayer.name,
+    }));
+}
+
+export function getWrongGuesses(state: GameState): string[] {
+    return state.guesses.filter((name) => name !== state.secretPlayer.name);
+}
+
 export function applyGuess(state: GameState, guessName: string): GameState {
     if (state.status !== "playing") return state;
     if (state.guesses.includes(guessName)) return state;
