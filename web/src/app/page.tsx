@@ -1,16 +1,17 @@
 "use client";
 
-import { Target } from "lucide-react";
+import { Target, X } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";  
-import type { GameIndex, PlayerSummary, Hex, HexStats } from "@/lib/types";
+import type { GameIndex, Hex, HexStats } from "@/lib/types";
 import { pickPlayerIndex, randomSeed, dailySeed } from "@/lib/random";
-import { applyGuess, MAX_GUESSES, getWrongGuesses, getGuessResults, type GameState } from "@/lib/game";
+import { applyGuess, MAX_GUESSES, getWrongGuesses, getGuessResults, buildShareText, type GameState } from "@/lib/game";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
 import ZonePanel from "@/components/ZonePanel";
 import HintPanel from "@/components/HintPanel";
 import ThemeToggle from "@/components/ThemeToggle";
 import GuessPips from "@/components/GuessPips";
+import GameOverPanel from "@/components/GameOverPanel";
 
 export default function Home() {
   const [index, setIndex] = useState<GameIndex | null>(null);
@@ -45,7 +46,11 @@ export default function Home() {
   }, [startNewGame]);
 
   if (!index || !game || !secretHexes || !hexStats) {
-    return <p className="p-8 text-gray-500">Loading game files...</p>;
+    return (
+      <main className="mx-auto flex w-full max-w-230 flex-col items-center px-5 pt-7">
+        <div className="h-96 w-full animate-pulse rounded-3xl border-[3px] border-ink bg-surface-2 shadow-sticker-lg" />
+      </main>
+    );
   }
   const statusText =
     game.status === "playing"
@@ -59,7 +64,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-230 flex-col gap-4 px-5 pt-7 pb-20">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex -rotate-2 items-center gap-[9px] rounded-xl border-[3px] border-ink bg-primary py-[5px] pr-[14px] pl-[5px] shadow-sticker">
+        <div className="flex -rotate-2 items-center gap-2.25 rounded-xl border-[3px] border-ink bg-primary py-1.25 pr-3.5 pl-1.25 shadow-sticker">
           <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-ink">
             <Target size={18} className="text-primary" />
           </div>
@@ -67,62 +72,71 @@ export default function Home() {
             SHOTCALLER
           </span>
         </div>
-        <div>
-          <h1 className="font-display mb-1.5 text-[19px] tracking-[-0.01em]">
-            GUESS THE PLAYER
-          </h1>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-semibold text-fg-muted">{statusText}</span>
-            <GuessPips results={getGuessResults(game)} total={MAX_GUESSES} />
-          </div>
-        </div>
         <ThemeToggle></ThemeToggle>
       </header>
 
       <div className="flex flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-sticker-lg">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b-[3px] border-ink bg-surface-2 px-4 py-2.5">
+          <h1 className="font-display text-[15px] tracking-[-0.01em] text-fg">
+            GUESS THE PLAYER
+          </h1>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-fg-muted">{statusText}</span>
+            <GuessPips results={getGuessResults(game)} total={MAX_GUESSES} />
+          </div>
+        </div>
         <div className="relative flex min-h-60 flex-col justify-center p-4">
-        <ShotChart
-          hexes={secretHexes}
-          leagueAverages={index.leagueAverages}
-          leagueOverallFg={index.leagueOverallFg}
-          hexStats={hexStats}
-          onZoneHover={setZoneInfo}
-        />
-        {zoneInfo && <ZonePanel  info = {zoneInfo} />}
+          {game.status === "playing" ? (
+            <>
+              <ShotChart
+                hexes={secretHexes}
+                leagueAverages={index.leagueAverages}
+                leagueOverallFg={index.leagueOverallFg}
+                hexStats={hexStats}
+                onZoneHover={setZoneInfo}
+              />
+              {zoneInfo && <ZonePanel  info = {zoneInfo} />}
+            </>
+          ) : (
+            <GameOverPanel
+              won={game.status === "won"}
+              playerName={game.secretPlayer.name}
+              results={getGuessResults(game)}
+              total={MAX_GUESSES}
+              shareText={buildShareText(game)}
+            />
+          )}
         </div>
+        <div className="border-t-[3px] border-ink">
+          <HintPanel player={game.secretPlayer} hintsUsed={game.hintsUsed} />
+        </div>
+        {wrongGuesses.length > 0 && (
+          <div className="border-t-[3px] border-ink px-4 py-3">
+            <span className="text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
+              Already ruled out
+            </span>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {wrongGuesses.map((name) => (
+                <span
+                    key={name}
+                    className="flex items-center gap-1.5 rounded-lg border-2 border-ink bg-danger-tint px-2.5 py-1 text-[13px] text-ink line-through"
+                >
+                    <X size={12} className="shrink-0" />
+                    {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      {game.status === "playing" ? (
-        <>
-          <GuessInput
-            playerNames={index.players.map((p) => p.name)}
-            disabledNames={game.guesses}
-            onGuess={(name) => setGame((g) => g && applyGuess(g, name))}
-            disabled={game.status !== "playing"}
-          />
-          <HintPanel
-            player={game.secretPlayer}
-            hintsUsed={game.hintsUsed}
-          />
-          <ul className="space-y-1">
-            {wrongGuesses.map((name) => (
-              <li key={name} className="rounded bg-red-50 px-3 py-2 text-red-700">✗ {name}</li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <div className="rounded-xl border p-6 text-center">
-          <p className="text-2xl font-bold">
-            {game.status === "won" ? `🎉 Congratulations! You guessed the player in ${game.guesses.length} guesses!.` : "😔 Game Over."}
-          </p>
-          <p className="mt-2 text-gray-600">It was <strong>{game.secretPlayer.name}</strong>.</p>
-          <button
-            onClick={() => startNewGame(index)}
-            className="mt-4 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
-          >
-            Jogar de novo
-          </button>
-        </div>
-      )}
+      <div className="sticky bottom-4 flex gap-2.5 rounded-2xl border-[3px] border-ink bg-paper py-2 pr-2 pl-[18px] shadow-sticker-md">
+        <GuessInput
+          playerNames={index.players.map((p) => p.name)}
+          disabledNames={game.guesses}
+          onGuess={(name) => setGame((g) => g && applyGuess(g, name))}
+          disabled={game.status !== "playing"}
+        />
+      </div>
     </main>
     );
 

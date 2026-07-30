@@ -15,7 +15,7 @@
   --success: oklch(0.5 0.13 150);
   --success-tint: oklch(0.92 0.05 150);
   --danger: oklch(0.5 0.17 20);
-  --danger-tint: oklch(0.93 0.05 20);
+  --danger-tint: oklch(0.7 0.15 20);
   --ink: oklch(0.12 0.015 55);
   --ink-muted: oklch(0.42 0.025 55);
   --paper: oklch(0.99 0.01 80);
@@ -34,7 +34,7 @@
   --success: oklch(0.74 0.14 150);
   --success-tint: oklch(0.36 0.06 150);
   --danger: oklch(0.7 0.15 20);
-  --danger-tint: oklch(0.38 0.08 20);
+  --danger-tint: oklch(0.7 0.15 20);
   --ink: oklch(0.1 0.012 55);
   --ink-muted: oklch(0.4 0.025 55);
   --paper: oklch(0.87 0.03 75);
@@ -57,6 +57,8 @@
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-paper: var(--paper);
+  --color-chart-hot: #B02B48;
+  --color-chart-cold: #5458A2;
 
   --font-display: var(--ff-display);
   --font-sans: var(--ff-body);
@@ -67,6 +69,10 @@
   --shadow-sticker: 4px 4px 0 var(--ink);
   --shadow-sticker-md: 5px 5px 0 var(--ink);
   --shadow-sticker-lg: 6px 6px 0 var(--ink);
+
+  --animate-pop: pop 0.35s ease-out;
+
+  
 }
 
 body {
@@ -74,4 +80,9 @@ body {
   color: var(--fg);
   font-family: var(--ff-body), system-ui, sans-serif;
   transition: background 0.2s, color 0.2s;
+}
+
+@keyframes pop {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }

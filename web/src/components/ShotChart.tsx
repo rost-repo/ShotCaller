@@ -6,7 +6,7 @@ import { hexPath } from "../lib/hexPath";
 import type { Hex, HexStats } from "@/lib/types";
 
 const COURT_W = 500;
-const COURT_H = 470;
+const COURT_H = 375;
 const RADIUS_STEPS = [1.5, 2.5, 3.5, 4.5, 5.5, 7.2];
 const PALETTE = ["#5458A2", "#6689BB", "#FADC97", "#F08460", "#B02B48"];
 
@@ -166,11 +166,11 @@ export default function ShotChart ( { hexes, leagueAverages, leagueOverallFg, he
 function CourtLines() {
     return (
         <g stroke="#94a3b8" strokeWidth={2} fill="none"
-            transform={`translate(250, 417.5) scale(1, -1)`}>
-            <circle cx={0} cy={0} r={7.5} />                      {/* aro */}
-            <line x1={-30} y1={-7.5} x2={30} y2={-7.5} />          {/* tabela */}
-            <rect x={-80} y={-52.5} width={160} height={190} />    {/* garrafão */}
-            <circle cx={0} cy={137.5} r={60} />                    {/* lance livre (semi) */}
+            transform={`translate(${COURT_W / 2}, ${COURT_H - 52.5}) scale(1, -1)`}>
+            <circle cx={0} cy={0} r={7.5} />                      
+            <line x1={-30} y1={-7.5} x2={30} y2={-7.5} />          
+            <rect x={-80} y={-52.5} width={160} height={190} />    
+            <circle cx={0} cy={137.5} r={60} />                  
             {[70, 90, 110, 140].map((y) => (
                 <g key={y}>
                     <line x1={-80} y1={y - 47.5} x2={-75} y2={y - 47.5} />

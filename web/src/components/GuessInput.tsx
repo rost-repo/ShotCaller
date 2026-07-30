@@ -36,7 +36,7 @@ export default function GuessInput({ playerNames, disabledNames, onGuess, disabl
     }
 
     return(
-        <div className="relative w-full max-w-md">
+        <div className="relative flex flex-1 gap-2.5">
             <input
             type="text"
             role="combobox"
@@ -44,21 +44,29 @@ export default function GuessInput({ playerNames, disabledNames, onGuess, disabl
             aria-controls="guess-suggestions"
             aria-autocomplete="list"
             aria-label="Type your guess..."
-            className="w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="flex-1 bg-transparent text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-50"
             placeholder={disabled ? "Game Over" : "Who is the secret player?"}
             value={query}
             disabled={disabled}
             onChange={(e) => { setQuery(e.target.value); setHighlighted(0); }}
             onKeyDown={onKeyDown}
             />
+            <button
+                type="button"
+                onClick={() => suggestions[highlighted] && submit(suggestions[highlighted])}
+                disabled={disabled}
+                className="font-display shrink-0 rounded-[10px] border-[3px] border-ink bg-primary px-5.5 py-2.5 text-[13px] text-ink shadow-sticker-sm disabled:bg-surface-2 disabled:text-fg-muted disabled:shadow-none"
+            >
+                Guess
+            </button>
             {suggestions.length > 0 && (
-            <ul id="guess-suggestions" role="listbox" className="absolute z-10 mt-1 w-full rounded-lg border bg-white shadow-lg text-black">
+            <ul id="guess-suggestions" role="listbox" className="absolute bottom-full z-10 mb-2 w-full overflow-hidden rounded-xl border-[3px] border-ink bg-paper shadow-sticker">
                 {suggestions.map((name, i) => (
                 <li
                     key={name}
                     role="option"
                     aria-selected={i === highlighted}
-                    className={`cursor-pointer px-4 py-2 ${i === highlighted ? "bg-blue-950 text-white" : ""}`}
+                    className={`cursor-pointer px-4 py-2 text-ink ${i === highlighted ? "bg-primary" : ""}`}
                     onMouseEnter={() => setHighlighted(i)}
                     onMouseDown={() => submit(name)}
                 >
