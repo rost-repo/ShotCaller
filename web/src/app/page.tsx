@@ -12,6 +12,7 @@ import HintPanel from "@/components/HintPanel";
 import ThemeToggle from "@/components/ThemeToggle";
 import GuessPips from "@/components/GuessPips";
 import GameOverPanel from "@/components/GameOverPanel";
+import HelpDialog from "@/components/HelpDialog";
 
 export default function Home() {
   const [index, setIndex] = useState<GameIndex | null>(null);
@@ -72,7 +73,10 @@ export default function Home() {
             SHOTCALLER
           </span>
         </div>
-        <ThemeToggle></ThemeToggle>
+        <div className="flex items-center gap-2">
+          <HelpDialog />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="flex flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-sticker-lg">
