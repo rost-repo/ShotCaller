@@ -20,8 +20,8 @@ export interface HintDefinition {
 export const HINTS: HintDefinition[] = [
     { label: "Age",        shortLabel: "AGE",  getValue: (p) => String(p.age) },
     { label: "Height",     shortLabel: "HT",   getValue: (p) => p.height },
-    { label: "Position",   shortLabel: "POS",  getValue: (p) => p.position },
     { label: "Conference", shortLabel: "CONF", getValue: (p) => p.conference },
+    { label: "Division", shortLabel: "DIV", getValue: (p) => p.division },
     { label: "Team",       shortLabel: "TEAM", getValue: (p) => p.team },
 ];
 

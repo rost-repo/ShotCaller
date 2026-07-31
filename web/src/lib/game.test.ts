@@ -6,7 +6,7 @@ const CORRECT_PLAYER = "Nikola Jokic"
 
 const fakePlayer = (name: string): PlayerSummary => ({
     id: 1, name, team: "DEN", position: "C", age: 30, conference: "West",
-    rookieYear: 0, jersey: "1", height: "6-11",
+    rookieYear: 0, jersey: "1", height: "6-11", division: "Northwest",
     stats: { pts: 27, ast: 9, reb: 12 },
 });
 

@@ -17,6 +17,9 @@ DY = HEX_RADIUS * 1.5
 
 MIN_ATTEMPTS_FOR_HEX_STATS = 3
 
+SHOT_TYPES = ["Jump Shot", "Layup", "Pullup", "Floater", "Step Back", "Dunk", "Fadeaway", "Hook"]
+
+
 #HEXAGONS FUNCTIONS
 def hexagon_center(x, y):
     """Returns the center (cx, cy) for the hexagon from (x, y)."""
@@ -86,6 +89,17 @@ def build_hex_league_stats(all_shots):
 
     return hex_stats
 
+def build_zone_types(shots, hex_zone_map):
+    """Counts shots by type within each zone, for the zone tooltip."""
+    zones = {}
+    for shot in shots:
+        cx, cy = hexagon_center(shot["LOC_X"], shot["LOC_Y"])
+        hid = f"{round_half_up(cx)},{round_half_up(cy)}"
+        zone = hex_zone_map.get(hid, "Unknown Zone")
+        counts = zones.setdefault(zone, {})
+        t = shot_type(shot["ACTION_TYPE"])
+        counts[t] = counts.get(t, 0) + 1
+    return zones
 
 #FILE FUNCTIONS
 
@@ -131,6 +145,20 @@ def _conference_from_team(abbreviation):
             "MIL", "ATL", "CHA", "MIA", "ORL", "WAS"}
     return "East" if abbreviation in EAST else "West"
 
+def _division_from_team(abbreviation):
+    DIVISIONS = {
+        "Atlantic":  {"BOS", "BKN", "NYK", "PHI", "TOR"},
+        "Central":   {"CHI", "CLE", "DET", "IND", "MIL"},
+        "Southeast": {"ATL", "CHA", "MIA", "ORL", "WAS"},
+        "Northwest": {"DEN", "MIN", "OKC", "POR", "UTA"},
+        "Pacific":   {"GSW", "LAC", "LAL", "PHX", "SAC"},
+        "Southwest": {"DAL", "HOU", "MEM", "NOP", "SAS"},
+    }
+    for division, teams in DIVISIONS.items():
+        if abbreviation in teams:
+            return division
+    return None
+
 def _player_summary(raw):
     info = raw["info"]
     stats = raw["season_stats"]
@@ -140,6 +168,7 @@ def _player_summary(raw):
         "team": info.get("TEAM_ABBREVIATION"),
         "position": info.get("POSITION"),
         "age": _age_from_birthdate(info.get("BIRTHDATE")),
+        "division": _division_from_team(info.get("TEAM_ABBREVIATION")),
         "conference": _conference_from_team(info.get("TEAM_ABBREVIATION")),
         "rookieYear": info.get("FROM_YEAR"),
         "height" : info.get("HEIGHT"),
@@ -149,6 +178,19 @@ def _player_summary(raw):
             "ast": stats.get("AST"),
             "reb": stats.get("REB"),},
     }
+
+def shot_type(action_type):
+    """Groups the raw ACTION_TYPE values into eight categories.
+    Order matters: more specific qualifiers are checked before generic ones."""
+    a = action_type.lower()
+    if "dunk" in a:      return "Dunk"
+    if "layup" in a:     return "Layup"
+    if "hook" in a:      return "Hook"
+    if "float" in a:     return "Floater"
+    if "step back" in a: return "Step Back"
+    if "fadeaway" in a:  return "Fadeaway"
+    if "pullup" in a or "pull-up" in a: return "Pullup"
+    return "Jump Shot"
 
 def main():
     raw_players = load_raw_players()
@@ -162,12 +204,13 @@ def main():
     players_dir.mkdir(parents=True, exist_ok=True)
     
     index_players = []
-    
+
     for raw in raw_players:
         index_players.append(_player_summary(raw))
         hexes = build_player_hexes(raw["shots"], hex_zone_map)
+        zone_types = build_zone_types(raw["shots"], hex_zone_map)
         with open(players_dir / f"{raw['id']}.json", "w", encoding="utf-8") as f:
-            json.dump({"id": raw["id"], "hexes": hexes}, f)
+            json.dump({"id": raw["id"], "hexes": hexes, "zoneTypes": zone_types}, f)
     
     with open(OUTPUT_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
         json.dump(hex_league_stats, f)    
