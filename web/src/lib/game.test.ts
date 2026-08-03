@@ -87,7 +87,7 @@ describe("buildShareText", () => {
     });
 
     it("nunca vaza o nome do jogador", () => {
-        let s = applyGuess(newGame(), CORRECT_PLAYER);
+        const s = applyGuess(newGame(), CORRECT_PLAYER);
         expect(buildShareText(s, FIXED)).not.toContain(CORRECT_PLAYER);
     });
 });
