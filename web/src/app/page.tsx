@@ -1,10 +1,8 @@
 "use client";
 
 import { Target, X } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";  
-import type { GameIndex, Hex, HexStats } from "@/lib/types";
-import { pickPlayerIndex, randomSeed, dailySeed } from "@/lib/random";
-import { applyGuess, MAX_GUESSES, getWrongGuesses, getGuessResults, buildShareText, type GameState } from "@/lib/game";
+import { useState } from "react";  
+import { MAX_GUESSES, getWrongGuesses, getGuessResults, buildShareText } from "@/lib/game";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
 import ZonePanel from "@/components/ZonePanel";
@@ -13,40 +11,14 @@ import ThemeToggle from "@/components/ThemeToggle";
 import GuessPips from "@/components/GuessPips";
 import GameOverPanel from "@/components/GameOverPanel";
 import HelpDialog from "@/components/HelpDialog";
+import StatsDialog from "@/components/StatsDialog";
+import { useGame } from "@/lib/useGame";
 
 export default function Home() {
-  const [index, setIndex] = useState<GameIndex | null>(null);
-  const [game, setGame] = useState<GameState | null>(null);
-  const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
-  const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
-  const [hexStats, setHexStats] = useState<HexStats | null>(null);
+const { index, game, secretHexes, hexStats, zoneTypes, guess } = useGame();
+const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
 
-  const startNewGame = useCallback( async (idx: GameIndex) => {
-    setSecretHexes(null);
-    const seed = dailySeed();
-    const secret = idx.players[pickPlayerIndex(idx.players.length, seed)]
-    setGame({ secretPlayer: secret, guesses: [], hintsUsed: 0, status: "playing"});
-
-    const hexRes = await fetch(`/data/players/${secret.id}.json`);
-    const hexData = await hexRes.json()
-    setSecretHexes(hexData.hexes as Hex[]);
-  }, []);
-
-  useEffect( () => {
-    fetch("/data/index.json")
-      .then((r) => r.json())
-      .then((idx: GameIndex) => {
-        setIndex(idx);
-        startNewGame(idx);
-      });
-    
-    fetch("/data/hex_stats.json")
-      .then((r) => r.json())
-      .then((stats: HexStats) => setHexStats(stats))
-
-  }, [startNewGame]);
-
-  if (!index || !game || !secretHexes || !hexStats) {
+  if (!index || !game || !secretHexes || !hexStats || !zoneTypes) {
     return (
       <main className="mx-auto flex w-full max-w-230 flex-col items-center px-5 pt-7">
         <div className="h-96 w-full animate-pulse rounded-3xl border-[3px] border-ink bg-surface-2 shadow-sticker-lg" />
@@ -76,6 +48,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <HelpDialog />
           <ThemeToggle />
+          <StatsDialog autoOpen={game.status !== "playing"}/>
         </div>
       </header>
 
@@ -99,7 +72,7 @@ export default function Home() {
                 hexStats={hexStats}
                 onZoneHover={setZoneInfo}
               />
-              {zoneInfo && <ZonePanel  info = {zoneInfo} />}
+              {zoneInfo && <ZonePanel info={zoneInfo} types={zoneTypes[zoneInfo.zone] ?? {}} />}
             </>
           ) : (
             <GameOverPanel
@@ -137,7 +110,7 @@ export default function Home() {
         <GuessInput
           playerNames={index.players.map((p) => p.name)}
           disabledNames={game.guesses}
-          onGuess={(name) => setGame((g) => g && applyGuess(g, name))}
+          onGuess={guess}
           disabled={game.status !== "playing"}
         />
       </div>

@@ -13,9 +13,12 @@ export interface HexLeagueStat {
 
 export type HexStats = Record<string, HexLeagueStat>;
 
+
+export type ZoneTypes = Record<string, Record<string, number>>;
 export interface PlayerHexes {
     id: number;
     hexes: Hex[];
+    zoneTypes: ZoneTypes
 }
 
 export interface PlayerSummary {
@@ -24,6 +27,7 @@ export interface PlayerSummary {
     team: string;
     position: string;
     age: number; 
+    division: string;
     conference: string;
     rookieYear: number;
     jersey: string;
@@ -40,4 +44,13 @@ export interface GameIndex {
     players : PlayerSummary[];
     leagueAverages: Record<string, number>;
     leagueOverallFg: number;
+}
+
+export interface Stats {
+    played: number;
+    won: number;
+    currentStreak: number;
+    maxStreak: number;
+    distribution: number[];
+    lastCompletedDay: string | null;
 }
