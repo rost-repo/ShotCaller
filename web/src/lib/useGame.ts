@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { GameIndex, Hex, HexStats, PlayerHexes, ZoneTypes } from "@/lib/types";
 import { pickPlayerIndex, dailySeed } from "@/lib/random";
 import { applyGuess, type GameState } from "@/lib/game";
-import { dayKey, loadGuesses, persistGame } from "@/lib/storage";
+import { loadTodayGuesses, saveTodayGuesses, recordResult } from "@/lib/storage";
 
 export function useGame() {
     const [index, setIndex] = useState<GameIndex | null>(null);
@@ -19,7 +19,7 @@ export function useGame() {
 
         const secret = idx.players[pickPlayerIndex(idx.players.length, dailySeed())];
         const fresh: GameState = { secretPlayer: secret, guesses: [], hintsUsed: 0, status: "playing" };
-        setGame(loadGuesses(dayKey()).reduce(applyGuess, fresh));
+        setGame(loadTodayGuesses().reduce(applyGuess, fresh));
 
         const res = await fetch(`/data/players/${secret.id}.json`);
         const data: PlayerHexes = await res.json();
@@ -41,7 +41,12 @@ export function useGame() {
     }, [startNewGame]);
 
     useEffect(() => {
-        if (game) persistGame(dayKey(), game);
+        if (!game) return;
+        saveTodayGuesses(game.guesses);
+        
+        if (game.status !== "playing") {
+            recordResult(game.status === "won", game.guesses.length);
+        }
     }, [game]);
 
     const guess = useCallback((name: string) => {

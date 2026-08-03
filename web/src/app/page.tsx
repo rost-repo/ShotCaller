@@ -11,6 +11,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import GuessPips from "@/components/GuessPips";
 import GameOverPanel from "@/components/GameOverPanel";
 import HelpDialog from "@/components/HelpDialog";
+import StatsDialog from "@/components/StatsDialog";
 import { useGame } from "@/lib/useGame";
 
 export default function Home() {
@@ -47,6 +48,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
         <div className="flex items-center gap-2">
           <HelpDialog />
           <ThemeToggle />
+          <StatsDialog autoOpen={game.status !== "playing"}/>
         </div>
       </header>
 

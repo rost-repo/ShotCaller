@@ -45,3 +45,12 @@ export interface GameIndex {
     leagueAverages: Record<string, number>;
     leagueOverallFg: number;
 }
+
+export interface Stats {
+    played: number;
+    won: number;
+    currentStreak: number;
+    maxStreak: number;
+    distribution: number[];
+    lastCompletedDay: string | null;
+}
