@@ -2,7 +2,7 @@
 
 import { Target, X } from "lucide-react";
 import { useState } from "react";  
-import { MAX_GUESSES, getWrongGuesses, getGuessResults, buildShareText } from "@/lib/game";
+import { MAX_GUESSES, getWrongGuesses, getPips, buildShareText } from "@/lib/game";
 import ShotChart, {type ZoneInfo } from "@/components/ShotChart";
 import GuessInput from "@/components/GuessInput";
 import ZonePanel from "@/components/ZonePanel";
@@ -59,7 +59,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           </h1>
           <div className="flex items-center gap-2">
             <span className="text-[12px] font-semibold text-fg-muted">{statusText}</span>
-            <GuessPips results={getGuessResults(game)} total={MAX_GUESSES} />
+            <GuessPips pips={getPips(game)} />
           </div>
         </div>
         <div className="relative flex min-h-60 flex-col justify-center p-4">
@@ -77,15 +77,15 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           ) : (
             <GameOverPanel
               won={game.status === "won"}
-              playerName={game.secretPlayer.name}
-              results={getGuessResults(game)}
-              total={MAX_GUESSES}
+              playerName={game.answer ?? ""}
+              guessCount={game.guesses.length}
+              pips={getPips(game)}
               shareText={buildShareText(game)}
             />
           )}
         </div>
         <div className="border-t-[3px] border-ink">
-          <HintPanel player={game.secretPlayer} hintsUsed={game.hintsUsed} />
+          <HintPanel hints={game.hints} />
         </div>
         {wrongGuesses.length > 0 && (
           <div className="border-t-[3px] border-ink px-4 py-3">

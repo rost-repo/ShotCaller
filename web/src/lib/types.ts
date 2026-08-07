@@ -48,7 +48,6 @@ export interface GameIndex {
 
 export interface Stats {
     played: number;
-    won: number;
     currentStreak: number;
     maxStreak: number;
     distribution: number[];

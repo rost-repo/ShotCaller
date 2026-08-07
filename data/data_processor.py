@@ -8,7 +8,8 @@ ROOT_DIR = SCRIPT_DIR.parent
 
 RAW_DIR = ROOT_DIR / "raw_data"
 AVERAGES_DIR = ROOT_DIR / "league_averages"
-OUTPUT_DIR = ROOT_DIR / "web" / "public" / "data"
+PUBLIC_DATA_DIR = ROOT_DIR / "web" / "public" / "data"   # servido estaticamente ao navegador
+PRIVATE_DATA_DIR = ROOT_DIR / "web" / "data"             # só o servidor lê
 SHOTS_DIR = ROOT_DIR / "all_shots"
 
 HEX_RADIUS = 7.5   # 0.75 feet
@@ -200,8 +201,9 @@ def main():
     hex_zone_map = build_hex_zone_map(all_shots)
     hex_league_stats = build_hex_league_stats(all_shots)
 
-    players_dir = OUTPUT_DIR / "players"
+    players_dir = PRIVATE_DATA_DIR / "players"
     players_dir.mkdir(parents=True, exist_ok=True)
+    PUBLIC_DATA_DIR.mkdir(parents=True, exist_ok=True)
     
     index_players = []
 
@@ -212,7 +214,7 @@ def main():
         with open(players_dir / f"{raw['id']}.json", "w", encoding="utf-8") as f:
             json.dump({"id": raw["id"], "hexes": hexes, "zoneTypes": zone_types}, f)
     
-    with open(OUTPUT_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
+    with open(PUBLIC_DATA_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
         json.dump(hex_league_stats, f)    
     
     index = {
@@ -222,7 +224,7 @@ def main():
         "leagueOverallFg": league_overall
     }
     
-    with open(OUTPUT_DIR / "index.json", "w", encoding="utf-8") as f:
+    with open(PUBLIC_DATA_DIR / "index.json", "w", encoding="utf-8") as f:
         json.dump(index, f)
     
 if __name__  == "__main__":

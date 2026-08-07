@@ -1,18 +1,16 @@
-import type { GuessResult } from "@/lib/game";
+import type { Pip } from "@/lib/game";
 
 interface GuessPipsProps {
-    results: GuessResult[];
-    total: number;
+    pips: Pip[];
 }
 
-export default function GuessPips({ results, total }: GuessPipsProps) {
+export default function GuessPips({ pips }: GuessPipsProps) {
     return (
-        <div className="flex gap-[3px]">
-            {Array.from({ length: total }).map((_, i) => {
-                const result = results[i];
-                const fill = result === undefined 
+        <div className="flex gap-0.75">
+            {pips.map((pip, i) => {
+                const fill = pip === "empty" 
                     ? "var(--surface-2)"  
-                    : result.correct 
+                    : pip === "correct" 
                         ? "var(--success)"  
                         : "var(--danger)";
                 return (

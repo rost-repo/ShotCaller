@@ -4,9 +4,10 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent                  
-OUTPUT_DIR = ROOT_DIR / "web" / "public" / "data"
+PUBLIC_DATA_DIR = ROOT_DIR / "web" / "public" / "data"
+PRIVATE_DATA_DIR = ROOT_DIR / "web" / "data"
 
-with open(OUTPUT_DIR / "index.json", encoding="utf-8") as f:
+with open(PUBLIC_DATA_DIR / "index.json", encoding="utf-8") as f:
     index = json.load(f)
 
 assert set(index.keys()) == {"season", "players", "leagueAverages", "leagueOverallFg"}
@@ -15,7 +16,7 @@ assert len(index["players"]) == 130, f"Esperava 130, veio {len(index['players'])
 for p in index["players"]:
     assert all(k in p for k in ("id", "name", "team", "position", "age", "conference", "rookieYear", "height", "jersey"))
 
-    with open(OUTPUT_DIR / "players" / f"{p['id']}.json", encoding="utf-8") as f:
+    with open(PRIVATE_DATA_DIR / "players" / f"{p['id']}.json", encoding="utf-8") as f:
         player_file = json.load(f)
     assert "name" not in player_file, "LEAKAGE, name should not be here."
 

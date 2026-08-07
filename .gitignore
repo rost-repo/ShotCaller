@@ -14,5 +14,6 @@ league_averages
 all_shots
 
 web/public/data/*
+web/data/*
 
 CLAUDE.md

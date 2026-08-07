@@ -1,14 +1,15 @@
 import type { PlayerSummary } from "./types";
+import { dayKey } from "./day";
 
 export const MAX_GUESSES = 6;
 
 export type GameStatus = "playing" | "won" | "lost";
 
 export interface GameState {
-    secretPlayer: PlayerSummary;
     guesses: string[];
-    hintsUsed: number;
     status: GameStatus;
+    hints: string[];
+    answer: string | null;
 }
 
 export interface HintDefinition {
@@ -27,49 +28,26 @@ export const HINTS: HintDefinition[] = [
 
 export const MAX_HINTS = HINTS.length;
 
-export interface GuessResult {
-    name: string;
-    correct: boolean;
-}
+export type Pip = "empty" | "wrong" | "correct";
 
-export function getGuessResults(state: GameState): GuessResult[] {
-    return state.guesses.map((name) => ({
-        name,
-        correct: name === state.secretPlayer.name,
-    }));
+export function getPips(state: GameState, total = MAX_GUESSES): Pip[] {
+    return Array.from({ length: total }, (_, i) => {
+        if (i >= state.guesses.length) return "empty";
+        return state.status === "won" && i === state.guesses.length - 1 ? "correct" : "wrong";
+    });
 }
 
 export function getWrongGuesses(state: GameState): string[] {
-    return state.guesses.filter((name) => name !== state.secretPlayer.name);
-}
-
-export function applyGuess(state: GameState, guessName: string): GameState {
-    if (state.status !== "playing") return state;
-    if (state.guesses.includes(guessName)) return state;
-
-    const guesses = [...state.guesses, guessName];
-    const correct = guessName === state.secretPlayer.name;
-
-    let status: GameStatus = "playing";
-    if (correct) status = "won";
-    else if (guesses.length >= MAX_GUESSES) status = "lost";
-
-    const hintsUsed = Math.min(guesses.length, MAX_HINTS);
-
-    return { ...state, guesses, status, hintsUsed };
+    return state.status === "won" ? state.guesses.slice(0, -1) : state.guesses;
 }
 
 export function buildShareText(state: GameState, date = new Date()): string {
-    const results = getGuessResults(state);
+    const squares = getPips(state)
+        .map((p) => (p === "empty" ? "⬜" : p === "correct" ? "🟩" : "🟥"))
+        .join("");
 
-    const squares = Array.from({ length: MAX_GUESSES }, (_, i) => {
-        const result = results[i];
-        if (result === undefined) return "⬜";
-        return result.correct ? "🟩" : "🟥";
-    }).join("");
-
-    const score = state.status === "won" ? `${results.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
-    const day = date.toISOString().slice(0, 10);
+    const score = state.status === "won" ? `${state.guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
+    const day = dayKey(date);
 
     return `Shotcaller ${day} ${score}\n${squares}`;
 }

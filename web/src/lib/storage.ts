@@ -1,7 +1,7 @@
 import { MAX_GUESSES } from "./game";
+import { dayKey } from "./day";
 import { Stats } from "./types";
 
-const TODAY_KEY = "shotcaller:today";
 const STATS_KEY = "shotcaller:stats";
 
 const EMPTY_STATS: Stats = {
@@ -11,33 +11,6 @@ const EMPTY_STATS: Stats = {
     distribution: Array.from({ length: MAX_GUESSES }, () => 0),
     lastCompletedDay: null,
 };
-interface TodayGame {
-    day: string;
-    guesses: string[];
-}
-
-function dayKey(date = new Date()): string {
-    return date.toISOString().slice(0, 10);
-}
-
-export function loadTodayGuesses(): string[] {
-    try {
-        const raw = localStorage.getItem(TODAY_KEY);
-        if (!raw) return [];
-
-        const saved: TodayGame = JSON.parse(raw);
-        return saved.day === dayKey() ? saved.guesses : [];
-    } catch {
-        return [];
-    }
-}
-
-export function saveTodayGuesses(guesses: string[]): void {
-    try {
-        localStorage.setItem(TODAY_KEY, JSON.stringify({ day: dayKey(), guesses }));
-    } catch {
-    }
-}
 
 export function loadStats(): Stats {
     try {
