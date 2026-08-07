@@ -1,10 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { GameIndex, Hex, HexStats, PlayerHexes, ZoneTypes } from "@/lib/types";
-import { pickPlayerIndex, dailySeed } from "@/lib/random";
-import { applyGuess, type GameState } from "@/lib/game";
-import { loadTodayGuesses, saveTodayGuesses, recordResult } from "@/lib/storage";
+import type { GameIndex, Hex, HexStats, ZoneTypes } from "@/lib/types";
+import type { GameState } from "@/lib/game";
+import { recordResult } from "@/lib/storage";
+
+interface TodayResponse extends GameState {
+    hexes: Hex[];
+    zoneTypes: ZoneTypes;
+}
 
 export function useGame() {
     const [index, setIndex] = useState<GameIndex | null>(null);
@@ -12,46 +16,57 @@ export function useGame() {
     const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
     const [hexStats, setHexStats] = useState<HexStats | null>(null);
     const [zoneTypes, setZoneTypes] = useState<ZoneTypes | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const startNewGame = useCallback(async (idx: GameIndex) => {
-        setSecretHexes(null);
-        setZoneTypes(null);
+    useEffect(() => {
+        async function load() {
+            try {
+                const [todayRes, indexRes, hexStatsRes] = await Promise.all([
+                    fetch("/api/today"),
+                    fetch("/data/index.json"),
+                    fetch("/data/hex_stats.json"),
+                ]);
 
-        const secret = idx.players[pickPlayerIndex(idx.players.length, dailySeed())];
-        const fresh: GameState = { secretPlayer: secret, guesses: [], hintsUsed: 0, status: "playing" };
-        setGame(loadTodayGuesses().reduce(applyGuess, fresh));
+                if (!todayRes.ok || !indexRes.ok || !hexStatsRes.ok) {
+                    throw new Error("unexpected response");
+                }
 
-        const res = await fetch(`/data/players/${secret.id}.json`);
-        const data: PlayerHexes = await res.json();
-        setSecretHexes(data.hexes);
-        setZoneTypes(data.zoneTypes);
+                const { hexes, zoneTypes: zones, ...state }: TodayResponse = await todayRes.json();
+                setSecretHexes(hexes);
+                setZoneTypes(zones);
+                setGame(state);
+                setIndex(await indexRes.json());
+                setHexStats(await hexStatsRes.json());
+            } catch {
+                setError("Couldnt load game.");
+            }
+        }
+
+        load();
     }, []);
 
-    useEffect(() => {
-        fetch("/data/index.json")
-            .then((r) => r.json())
-            .then((idx: GameIndex) => {
-                setIndex(idx);
-                startNewGame(idx);
-            });
-
-        fetch("/data/hex_stats.json")
-            .then((r) => r.json())
-            .then(setHexStats);
-    }, [startNewGame]);
-
-    useEffect(() => {
-        if (!game) return;
-        saveTodayGuesses(game.guesses);
-        
-        if (game.status !== "playing") {
+    useEffect(() => {        
+        if (game && game.status !== "playing") {
             recordResult(game.status === "won", game.guesses.length);
         }
     }, [game]);
 
-    const guess = useCallback((name: string) => {
-        setGame((g) => (g ? applyGuess(g, name) : g));
+    const guess = useCallback(async (name: string) => {
+        try {
+            const res = await fetch("/api/guess", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ name }),
+            });
+            if (!res.ok) throw new Error("Guess Declined");
+
+            setGame(await res.json());
+            setError(null);
+        } catch {
+            setError("Could not register guess.");
+        }
     }, []);
 
-    return { index, game, secretHexes, hexStats, zoneTypes, guess };
+    return { index, game, secretHexes, hexStats, zoneTypes, guess, error };
+
 }

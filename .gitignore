@@ -8,11 +8,8 @@ node_modules/
 .next/
 .env*.local
 
-# Data cache (grande, regenerável)
 raw_data/*.json
 league_averages
 all_shots
-
-web/public/data/*
 
 CLAUDE.md

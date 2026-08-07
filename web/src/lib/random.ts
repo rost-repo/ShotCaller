@@ -14,7 +14,3 @@ export function pickPlayerIndex(count: number, seed: number): number {
 export function randomSeed(): number {
     return Math.floor(Math.random() * 2 ** 31)
 }
-
-export function dailySeed(date = new Date()): number {
-    return date.getUTCFullYear() * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
-} 
