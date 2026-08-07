@@ -48,7 +48,7 @@ export default function GameOverPanel({ won, playerName, guessCount , pips, shar
                     return (
                         <div
                             key={i}
-                            className={`h-[26px] w-[26px] rounded-md border-2 border-ink ${
+                            className={`h-6.5 w-6.5 rounded-md border-2 border-ink ${
                                 pip === "empty"
                                     ? "bg-surface-2"
                                     : pip === "correct"
@@ -61,7 +61,7 @@ export default function GameOverPanel({ won, playerName, guessCount , pips, shar
             </div>
             <button
                 onClick={copy}
-                className="font-display mt-1.5 flex items-center gap-1.5 rounded-[10px] border-[3px] border-ink bg-primary px-5 py-[11px] text-[13px] text-ink shadow-sticker"
+                className="font-display mt-1.5 flex items-center gap-1.5 rounded-[10px] border-[3px] border-ink bg-primary px-5 py-2.75 text-[13px] text-ink shadow-sticker"
             >
                 {copied ? <Check size={16} /> : <Share2 size={16} />}
                 {copied ? "Copied!" : "Copy results"}

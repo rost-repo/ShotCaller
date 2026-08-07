@@ -106,7 +106,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           </div>
         )}
       </div>
-      <div className="sticky bottom-4 flex gap-2.5 rounded-2xl border-[3px] border-ink bg-paper py-2 pr-2 pl-[18px] shadow-sticker-md">
+      <div className="sticky bottom-4 flex gap-2.5 rounded-2xl border-[3px] border-ink bg-paper py-2 pr-2 pl-4.5 shadow-sticker-md">
         <GuessInput
           playerNames={index.players.map((p) => p.name)}
           disabledNames={game.guesses}
