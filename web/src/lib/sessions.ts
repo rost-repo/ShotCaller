@@ -30,8 +30,9 @@ function isSessionPayload( value: unknown ): value is SessionPayload {
 }
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
+    const secret = getSecret()
     try {
-        const { payload } = await jwtVerify(token, getSecret(), {
+        const { payload } = await jwtVerify(token, secret, {
             algorithms: ["HS256"],
         });
         return isSessionPayload(payload) ? payload : null;

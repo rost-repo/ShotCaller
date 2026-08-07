@@ -15,9 +15,26 @@ import StatsDialog from "@/components/StatsDialog";
 import { useGame } from "@/lib/useGame";
 
 export default function Home() {
-const { index, game, secretHexes, hexStats, zoneTypes, guess } = useGame();
+const { index, game, secretHexes, hexStats, zoneTypes, guess, error } = useGame();
 const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
-
+  if (error && !game) {
+    return (
+      <main className="mx-auto flex w-full max-w-230 flex-col items-center px-5 pt-7">
+        <div className="flex w-full flex-col items-center gap-3 rounded-3xl border-[3px] border-ink bg-paper px-5 py-16 text-center shadow-sticker-lg">
+          <p className="font-display text-[22px] text-danger [-webkit-text-stroke:1.5px_var(--ink)]">
+            SOMETHING WENT WRONG
+          </p>
+          <p className="text-[15px] text-ink-muted">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="font-display mt-2 rounded-[10px] border-[3px] border-ink bg-primary px-5 py-2.75 text-[13px] text-ink shadow-sticker"
+          >
+            Try again
+          </button>
+        </div>
+      </main>
+    );
+  }
   if (!index || !game || !secretHexes || !hexStats || !zoneTypes) {
     return (
       <main className="mx-auto flex w-full max-w-230 flex-col items-center px-5 pt-7">
@@ -106,6 +123,11 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           </div>
         )}
       </div>
+      {error && (
+        <div className="rounded-xl border-2 border-ink bg-danger-tint px-3 py-2 text-center text-[13px] text-ink">
+          {error}
+        </div>
+      )}
       <div className="sticky bottom-4 flex gap-2.5 rounded-2xl border-[3px] border-ink bg-paper py-2 pr-2 pl-4.5 shadow-sticker-md">
         <GuessInput
           playerNames={index.players.map((p) => p.name)}

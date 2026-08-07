@@ -16,18 +16,33 @@ export function useGame() {
     const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
     const [hexStats, setHexStats] = useState<HexStats | null>(null);
     const [zoneTypes, setZoneTypes] = useState<ZoneTypes | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/today")
-            .then((r) => r.json())
-            .then(({ hexes, zoneTypes: zones, ...state }: TodayResponse) => {
+        async function load() {
+            try {
+                const [todayRes, indexRes, hexStatsRes] = await Promise.all([
+                    fetch("/api/today"),
+                    fetch("/data/index.json"),
+                    fetch("/data/hex_stats.json"),
+                ]);
+
+                if (!todayRes.ok || !indexRes.ok || !hexStatsRes.ok) {
+                    throw new Error("unexpected response");
+                }
+
+                const { hexes, zoneTypes: zones, ...state }: TodayResponse = await todayRes.json();
                 setSecretHexes(hexes);
                 setZoneTypes(zones);
                 setGame(state);
-            });
+                setIndex(await indexRes.json());
+                setHexStats(await hexStatsRes.json());
+            } catch {
+                setError("Couldnt load game.");
+            }
+        }
 
-        fetch("/data/index.json").then((r) => r.json()).then(setIndex);
-        fetch("/data/hex_stats.json").then((r) => r.json()).then(setHexStats);
+        load();
     }, []);
 
     useEffect(() => {        
@@ -37,16 +52,21 @@ export function useGame() {
     }, [game]);
 
     const guess = useCallback(async (name: string) => {
-        const res = await fetch("/api/guess", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ name }),
-        });
-        if (!res.ok) return;
+        try {
+            const res = await fetch("/api/guess", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ name }),
+            });
+            if (!res.ok) throw new Error("Guess Declined");
 
-        setGame(await res.json());
+            setGame(await res.json());
+            setError(null);
+        } catch {
+            setError("Could not register guess.");
+        }
     }, []);
 
-    return { index, game, secretHexes, hexStats, zoneTypes, guess };
+    return { index, game, secretHexes, hexStats, zoneTypes, guess, error };
 
 }
