@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveGame, addGuess } from "./secret";
+import { deriveGame, addGuess, poolForDay, Pool } from "./secret";
 import { MAX_GUESSES, MAX_HINTS } from "./game";
 import type { PlayerSummary } from "./types";
 
@@ -55,5 +55,32 @@ describe("addGuess", () => {
         const previous = ["Stephen Curry"];
         addGuess(previous, CORRECT);
         expect(previous).toEqual(["Stephen Curry"]);
+    });
+});
+
+const pools: Pool[] = [
+    { from: "2000-01-01", ids: [1, 2, 3] },
+    { from: "2027-10-01", ids: [1, 2, 3, 4] },
+];
+
+describe("poolForDay", () => {
+    it("ignores pools that start in the future", () => {
+        expect(poolForDay(pools, "2026-08-09").from).toBe("2000-01-01");
+    });
+
+    it("picks the newest pool already in effect", () => {
+        expect(poolForDay(pools, "2027-11-15").from).toBe("2027-10-01");
+    });
+
+    it("includes the day a pool starts", () => {
+        expect(poolForDay(pools, "2027-10-01").from).toBe("2027-10-01");
+    });
+
+    it("keeps a past day on the pool it was played with", () => {
+        expect(poolForDay(pools, "2026-08-09").ids).toHaveLength(3);
+    });
+
+    it("throws when no pool applies", () => {
+        expect(() => poolForDay([{ from: "2030-01-01", ids: [1] }], "2026-08-09")).toThrow();
     });
 });

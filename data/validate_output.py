@@ -1,6 +1,7 @@
 # arquivo: data_scripts/validate_output.py
 import json
 from pathlib import Path
+import re
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent                  
@@ -28,3 +29,23 @@ for p in index["players"]:
 
 print("Artefatos válidos. ✔")
 print(f"Jogadores: {len(index['players'])} | Zonas na liga: {len(index['leagueAverages'])}")
+
+with open(PRIVATE_DATA_DIR / "pools.json", encoding="utf-8") as f:
+    pools = json.load(f)
+
+assert isinstance(pools, list) and pools, "pools.json vazio ou mal formado"
+
+known_ids = {p["id"] for p in index["players"]}
+previous_from = ""
+
+for pool in pools:
+    assert set(pool.keys()) == {"from", "ids"}, f"chaves inesperadas em {pool.get('from')}"
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", pool["from"]), f"data mal formada: {pool['from']}"
+    assert pool["from"] > previous_from, f"pools fora de ordem em {pool['from']}"
+    previous_from = pool["from"]
+
+    assert pool["ids"], f"pool {pool['from']} está vazio"
+    assert len(pool["ids"]) == len(set(pool["ids"])), f"ids repetidos em {pool['from']}"
+
+    missing = [i for i in pool["ids"] if i not in known_ids]
+    assert not missing, f"pool {pool['from']} tem ids fora do índice: {missing}"
