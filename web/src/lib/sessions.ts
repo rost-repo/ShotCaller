@@ -1,5 +1,13 @@
-import { Session } from "inspector/promises";
 import { SignJWT, jwtVerify } from "jose";
+
+export class SessionConfigurationError extends Error {
+    readonly code = "SESSION_SECRET_MISSING";
+
+    constructor() {
+        super("SESSION_SECRET is not configured");
+        this.name = "SessionConfigurationError";
+    }
+}
 
 export interface SessionPayload {
     day: string;
@@ -8,7 +16,7 @@ export interface SessionPayload {
 
 function getSecret(): Uint8Array {
     const raw = process.env.SESSION_SECRET;
-    if (!raw) throw new Error("SESSION_SECRET undefined");
+    if (!raw) throw new SessionConfigurationError();
     return new TextEncoder().encode(raw);
 }
 

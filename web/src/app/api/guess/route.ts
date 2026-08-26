@@ -1,6 +1,7 @@
 import { dayKey } from "@/lib/day";
 import { addGuess, deriveGame, getTodaysPlayer, loadIndex } from "@/lib/secret";
 import { readSession, writeSession } from "@/lib/sessionCookie";
+import { toApiErrorResponse } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -19,23 +20,34 @@ export async function POST(request: Request) {
     const player = await getTodaysPlayer();
     const today = dayKey();
 
-    const session = await readSession();
-    const previous = session?.day === today ? session.guesses : [];
+    let session;
 
-    if (deriveGame(player, previous).status !== "playing"){
-        return NextResponse.json({ error: "game ended." }, { status: 409 });
+    try {
+        session = await readSession();
+    } catch (error) {
+        const response = toApiErrorResponse(error);
+        if (response) return response;
+
+        throw error;
     }
+    const previous = session?.day === today ? session.guesses : [];
 
     const guesses = addGuess(previous, name);
     const { status, hints } = deriveGame(player, guesses);
 
-    await writeSession({ day: today, guesses});
-    
+    try {
+        await writeSession({ day: today, guesses });
+    } catch (error) {
+        const response = toApiErrorResponse(error);
+        if (response) return response;
+
+        throw error;
+    }
+
     return NextResponse.json({
         guesses,
         status,
         hints,
         answer: status === "playing" ? null : player.name,
-    })
-
+    });
 }
