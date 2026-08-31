@@ -5,8 +5,8 @@ import { toApiErrorResponse } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const player = await getTodaysPlayer();
-    const { hexes, zoneTypes } = await loadPlayer(player.id);
+    const { player, season } = await getTodaysPlayer();
+    const { hexes, zoneTypes } = await loadPlayer(season, player.id);
 
     let session;
 

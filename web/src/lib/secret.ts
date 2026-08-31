@@ -5,33 +5,36 @@ import { pickPlayerIndex } from "./random";
 import { dayKey, seedForDay } from "./day";
 import { GameStatus, HINTS, MAX_GUESSES, MAX_HINTS } from "./game";
 
-let indexCache: GameIndex | null = null;
+const indexCache = new Map<string, GameIndex>();
 
-export async function loadIndex(): Promise<GameIndex> {
-    if (indexCache) return indexCache;
+export async function loadIndex(season: string): Promise<GameIndex> {
+    const cached = indexCache.get(season);
+    if (cached) return cached;
 
-    const file = path.join(process.cwd(), "public", "data", "index.json");
+    const file = path.join(process.cwd(), "public", "data", "seasons", season, "index.json");
     const parsed = JSON.parse(await readFile(file, "utf-8")) as GameIndex;
 
-    indexCache = parsed;
+    indexCache.set(season, parsed);
     return parsed;
 }
 
-const playerCache = new Map<number, PlayerHexes>();
+const playerCache = new Map<string, PlayerHexes>();
 
-export async function loadPlayer(id:number): Promise<PlayerHexes> {
-    const cached = playerCache.get(id)
+export async function loadPlayer(season: string, id: number): Promise<PlayerHexes> {
+    const key = `${season}/${id}`;
+    const cached = playerCache.get(key)
     if (cached) return cached;
 
-    const file = path.join(process.cwd(), "data", "players", `${id}.json`);
+    const file = path.join(process.cwd(), "data", "seasons", season, "players", `${id}.json`);
     const parsed = JSON.parse(await readFile(file, "utf-8")) as PlayerHexes;
 
-    playerCache.set(id, parsed);
+    playerCache.set(key, parsed);
     return parsed;
 }
 
 export interface Pool {
     from: string;
+    season: string;
     ids: number[];
 }
 
@@ -59,19 +62,30 @@ export function poolForDay(pools: Pool[], day: string): Pool {
     return chosen;
 }
 
-export async function getPlayerForDay(day: string): Promise<PlayerSummary> {
-    const [index, pools] = await Promise.all([loadIndex(), loadPools()]);
+export async function seasonForDay(day: string): Promise<string> {
+    const pools = await loadPools();
+    return poolForDay(pools, day).season;
+}
 
+export interface DayPlayer {
+    player: PlayerSummary;
+    season: string;
+}
+
+export async function getPlayerForDay(day: string): Promise<DayPlayer> {
+    const pools = await loadPools();
     const pool = poolForDay(pools, day);
+
     const id = pool.ids[pickPlayerIndex(pool.ids.length, seedForDay(day))];
+    const index = await loadIndex(pool.season);
 
     const player = index.players.find((p) => p.id === id);
     if (!player) throw new Error(`player ${id} from pool is not on index`);
 
-    return player;
+    return { player, season: pool.season };
 }
 
-export async function getTodaysPlayer(): Promise<PlayerSummary> {
+export async function getTodaysPlayer(): Promise<DayPlayer> {
     return getPlayerForDay(dayKey());
 }
 

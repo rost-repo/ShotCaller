@@ -59,8 +59,8 @@ describe("addGuess", () => {
 });
 
 const pools: Pool[] = [
-    { from: "2000-01-01", ids: [1, 2, 3] },
-    { from: "2027-10-01", ids: [1, 2, 3, 4] },
+    { from: "2000-01-01", season: "2025-26", ids: [1, 2, 3] },
+    { from: "2027-10-01", season: "2027-28", ids: [1, 2, 3, 4] },
 ];
 
 describe("poolForDay", () => {
@@ -80,7 +80,11 @@ describe("poolForDay", () => {
         expect(poolForDay(pools, "2026-08-09").ids).toHaveLength(3);
     });
 
+    it("carries the season of the pool in effect", () => {
+        expect(poolForDay(pools, "2027-11-15").season).toBe("2027-28");
+    });
+
     it("throws when no pool applies", () => {
-        expect(() => poolForDay([{ from: "2030-01-01", ids: [1] }], "2026-08-09")).toThrow();
+        expect(() => poolForDay([{ from: "2030-01-01", season: "2030-31", ids: [1] }], "2026-08-09")).toThrow();
     });
 });

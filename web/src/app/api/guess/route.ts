@@ -12,12 +12,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "invalid guess"}, { status: 400});
     }
 
-    const index = await loadIndex();
+    const { player, season } = await getTodaysPlayer();
+
+    const index = await loadIndex(season);
     if (!index.players.some((p) => p.name === name)) {
         return NextResponse.json({ error: "Unknown Player" }, { status: 400 });
     }
 
-    const player = await getTodaysPlayer();
     const today = dayKey();
 
     let session;

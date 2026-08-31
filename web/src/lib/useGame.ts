@@ -10,7 +10,7 @@ interface TodayResponse extends GameState {
     zoneTypes: ZoneTypes;
 }
 
-export function useGame() {
+export function useGame(season: string) {
     const [index, setIndex] = useState<GameIndex | null>(null);
     const [game, setGame] = useState<GameState | null>(null);
     const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
@@ -23,8 +23,8 @@ export function useGame() {
             try {
                 const [todayRes, indexRes, hexStatsRes] = await Promise.all([
                     fetch("/api/today"),
-                    fetch("/data/index.json"),
-                    fetch("/data/hex_stats.json"),
+                    fetch(`/data/seasons/${season}/index.json`),
+                    fetch(`/data/seasons/${season}/hex_stats.json`),
                 ]);
 
                 if (!todayRes.ok || !indexRes.ok || !hexStatsRes.ok) {
@@ -43,7 +43,7 @@ export function useGame() {
         }
 
         load();
-    }, []);
+    }, [season]);
 
     useEffect(() => {        
         if (game && game.status !== "playing") {
