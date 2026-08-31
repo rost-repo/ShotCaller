@@ -12,10 +12,29 @@ import GuessPips from "@/components/GuessPips";
 import GameOverPanel from "@/components/GameOverPanel";
 import HelpDialog from "@/components/HelpDialog";
 import StatsDialog from "@/components/StatsDialog";
+import ArchiveDialog from "@/components/ArchiveDialog";
 import { useGame } from "@/lib/useGame";
+import { dayKey } from "@/lib/day";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
-export default function GameScreen({ season }: { season: string }) {
-const { index, game, secretHexes, hexStats, zoneTypes, guess, error } = useGame(season);
+interface GameScreenProps {
+    season: string;
+    day?: string;
+}
+
+function formatDay(day: string): string {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export default function GameScreen({ season, day }: GameScreenProps) {
+const { index, game, secretHexes, hexStats, zoneTypes, guess, error } = useGame(season, day);
 const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
   if (error && !game) {
     return (
@@ -64,10 +83,26 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
         </div>
         <div className="flex items-center gap-2">
           <HelpDialog />
+          <ArchiveDialog />
           <ThemeToggle />
           <StatsDialog autoOpen={game.status !== "playing"}/>
         </div>
       </header>
+
+      {day && (
+        <div className="-mt-1 mb-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border-[3px] border-ink bg-primary-tint px-4 py-2 shadow-sticker">
+          <span className="text-[13px] font-semibold text-ink">
+            Archive · {formatDay(day)}
+          </span>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 rounded-lg border-2 border-ink bg-paper px-2.5 py-1 text-[12px] font-semibold text-ink"
+          >
+            <ArrowLeft size={13} className="shrink-0" />
+            Today
+          </Link>
+        </div>
+      )}
 
       <div className="flex flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-sticker-lg">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b-[3px] border-ink bg-surface-2 px-4 py-2.5">
@@ -97,7 +132,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
               playerName={game.answer ?? ""}
               guessCount={game.guesses.length}
               pips={getPips(game)}
-              shareText={buildShareText(game)}
+              shareText={buildShareText(game, day ?? dayKey())}
             />
           )}
         </div>

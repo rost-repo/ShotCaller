@@ -1,6 +1,6 @@
-import { dayKey } from "@/lib/day";
-import { addGuess, deriveGame, getTodaysPlayer, loadIndex } from "@/lib/secret";
-import { readSession, writeSession } from "@/lib/sessionCookie";
+import { dayKey, isPlayableDay } from "@/lib/day";
+import { addGuess, deriveGame, getPlayerForDay, loadIndex } from "@/lib/secret";
+import { cookieForDay, readSession, writeSession } from "@/lib/sessionCookie";
 import { toApiErrorResponse } from "@/lib/apiErrors";
 import { NextResponse } from "next/server";
 
@@ -12,32 +12,39 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "invalid guess"}, { status: 400});
     }
 
-    const { player, season } = await getTodaysPlayer();
+    const today = dayKey();
+    const day: string = typeof body?.day === "string" ? body.day : today;
+
+    if (!isPlayableDay(day, today)) {
+        return NextResponse.json({ error: "unplayable day" }, { status: 400 });
+    }
+
+    const { player, season } = await getPlayerForDay(day);
 
     const index = await loadIndex(season);
     if (!index.players.some((p) => p.name === name)) {
         return NextResponse.json({ error: "Unknown Player" }, { status: 400 });
     }
 
-    const today = dayKey();
-
+    const cookie = cookieForDay(day, today);
     let session;
 
     try {
-        session = await readSession();
+        session = await readSession(cookie);
     } catch (error) {
         const response = toApiErrorResponse(error);
         if (response) return response;
 
         throw error;
     }
-    const previous = session?.day === today ? session.guesses : [];
+
+    const previous = session?.day === day ? session.guesses : [];
 
     const guesses = addGuess(previous, name);
     const { status, hints } = deriveGame(player, guesses);
 
     try {
-        await writeSession({ day: today, guesses });
+        await writeSession(cookie, { day, guesses });
     } catch (error) {
         const response = toApiErrorResponse(error);
         if (response) return response;

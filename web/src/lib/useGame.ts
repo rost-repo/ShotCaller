@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { GameIndex, Hex, HexStats, ZoneTypes } from "@/lib/types";
 import type { GameState } from "@/lib/game";
-import { recordResult } from "@/lib/storage";
+import { recordArchiveResult, recordResult } from "@/lib/storage";
 
 interface TodayResponse extends GameState {
     hexes: Hex[];
     zoneTypes: ZoneTypes;
 }
 
-export function useGame(season: string) {
+export function useGame(season: string, day?: string) {
     const [index, setIndex] = useState<GameIndex | null>(null);
     const [game, setGame] = useState<GameState | null>(null);
     const [secretHexes, setSecretHexes] = useState<Hex[] | null>(null);
@@ -22,7 +22,7 @@ export function useGame(season: string) {
         async function load() {
             try {
                 const [todayRes, indexRes, hexStatsRes] = await Promise.all([
-                    fetch("/api/today"),
+                    fetch(day ? `/api/game?day=${encodeURIComponent(day)}` : "/api/game"),
                     fetch(`/data/seasons/${season}/index.json`),
                     fetch(`/data/seasons/${season}/hex_stats.json`),
                 ]);
@@ -43,20 +43,24 @@ export function useGame(season: string) {
         }
 
         load();
-    }, [season]);
+    }, [season, day]);
 
-    useEffect(() => {        
-        if (game && game.status !== "playing") {
-            recordResult(game.status === "won", game.guesses.length);
-        }
-    }, [game]);
+    useEffect(() => {
+        if (!game || game.status === "playing") return;
+
+        const won = game.status === "won";
+
+        // Archive keeps its own record; it never touches streaks or distribution.
+        if (day) recordArchiveResult(day, won, game.guesses.length);
+        else recordResult(won, game.guesses.length);
+    }, [game, day]);
 
     const guess = useCallback(async (name: string) => {
         try {
             const res = await fetch("/api/guess", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ name }),
+                body: JSON.stringify(day ? { name, day } : { name }),
             });
             if (!res.ok) throw new Error("Guess Declined");
 
@@ -65,7 +69,7 @@ export function useGame(season: string) {
         } catch {
             setError("Could not register guess.");
         }
-    }, []);
+    }, [day]);
 
     return { index, game, secretHexes, hexStats, zoneTypes, guess, error };
 

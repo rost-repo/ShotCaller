@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveGame, addGuess, poolForDay, Pool } from "./secret";
+import { deriveGame, addGuess, poolForDay, idForDay, Pool } from "./secret";
 import { MAX_GUESSES, MAX_HINTS } from "./game";
 import type { PlayerSummary } from "./types";
 
@@ -86,5 +86,38 @@ describe("poolForDay", () => {
 
     it("throws when no pool applies", () => {
         expect(() => poolForDay([{ from: "2030-01-01", season: "2030-31", ids: [1] }], "2026-08-09")).toThrow();
+    });
+});
+
+function addDays(day: string, n: number): string {
+    const d = new Date(`${day}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+}
+
+const cyclePool: Pool = { from: "2026-01-01", season: "2025-26", ids: [11, 22, 33, 44, 55] };
+
+describe("idForDay", () => {
+    it("uses every player before repeating one", () => {
+        const drawn = cyclePool.ids.map((_, i) => idForDay(cyclePool, addDays(cyclePool.from, i)));
+        expect(new Set(drawn).size).toBe(cyclePool.ids.length);
+    });
+
+    it("draws each player exactly once per cycle", () => {
+        const len = cyclePool.ids.length;
+        const drawn = Array.from({ length: len * 2 }, (_, i) => idForDay(cyclePool, addDays(cyclePool.from, i)));
+
+        for (const id of cyclePool.ids) {
+            expect(drawn.filter((d) => d === id)).toHaveLength(2);
+        }
+    });
+
+    it("is deterministic for the same day", () => {
+        expect(idForDay(cyclePool, "2026-03-05")).toBe(idForDay(cyclePool, "2026-03-05"));
+    });
+
+    it("only draws ids that are in the pool", () => {
+        const drawn = Array.from({ length: 40 }, (_, i) => idForDay(cyclePool, addDays(cyclePool.from, i)));
+        expect(drawn.every((d) => cyclePool.ids.includes(d))).toBe(true);
     });
 });

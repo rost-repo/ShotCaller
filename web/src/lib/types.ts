@@ -46,6 +46,9 @@ export interface GameIndex {
     leagueOverallFg: number;
 }
 
+// Day -> score: guesses used when won, "X" when lost.
+export type ArchiveResults = Record<string, number | "X">;
+
 export interface Stats {
     played: number;
     currentStreak: number;
