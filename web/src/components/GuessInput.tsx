@@ -36,7 +36,7 @@ export default function GuessInput({ playerNames, disabledNames, onGuess, disabl
     }
 
     return(
-        <div className="relative flex flex-1 gap-2.5">
+        <div className="relative flex min-w-0 flex-1 gap-2.5">
             <input
             type="text"
             role="combobox"
@@ -44,7 +44,7 @@ export default function GuessInput({ playerNames, disabledNames, onGuess, disabl
             aria-controls="guess-suggestions"
             aria-autocomplete="list"
             aria-label="Type your guess..."
-            className="flex-1 bg-transparent text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-50"
+            className="min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-muted focus:outline-none disabled:opacity-50"
             placeholder={disabled ? "Game Over" : "Who is the secret player?"}
             value={query}
             disabled={disabled}

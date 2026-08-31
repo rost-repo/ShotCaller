@@ -12,7 +12,7 @@ export default function ThemeToggle() {
         <button
             onClick={toggle}
             aria-label="Toggle color theme"
-            className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg"
+            className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg sm:h-9 sm:w-9"
         >
             <Moon size={18} className="dark:hidden" />
             <Sun size={18} className="hidden dark:block" />

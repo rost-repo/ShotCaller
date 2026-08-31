@@ -18,7 +18,7 @@ export default function HelpDialog() {
             <button
                 onClick={() => ref.current?.showModal()}
                 aria-label="How to play"
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg"
+                className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg sm:h-9 sm:w-9"
             >
                 ?
             </button>

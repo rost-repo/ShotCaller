@@ -71,16 +71,16 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
 
   return (
     <main className="mx-auto flex w-full max-w-230 flex-col gap-4 px-5 pt-7 pb-20">
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex -rotate-2 items-center gap-2.25 rounded-xl border-[3px] border-ink bg-primary py-1.25 pr-3.5 pl-1.25 shadow-sticker">
-          <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg bg-ink">
-            <Target size={18} className="text-primary" />
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+        <div className="flex -rotate-2 items-center gap-1.5 rounded-xl border-[3px] border-ink bg-primary py-1.25 pr-2.5 pl-1 shadow-sticker sm:gap-2.25 sm:pr-3.5 sm:pl-1.25">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-ink sm:h-7.5 sm:w-7.5">
+            <Target className="h-3.5 w-3.5 text-primary sm:h-4.5 sm:w-4.5" />
           </div>
-          <span className="font-display text-[19px] tracking-[-0.01em] text-ink">
+          <span className="font-display text-[15px] tracking-[-0.01em] text-ink sm:text-[19px]">
             SHOTCALLER
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <HelpDialog />
           <ArchiveDialog />
           <ThemeToggle />
@@ -143,11 +143,11 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
             <span className="text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
               Already ruled out
             </span>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-2 flex gap-2 overflow-x-auto">
               {wrongGuesses.map((name) => (
                 <span
                     key={name}
-                    className="flex items-center gap-1.5 rounded-lg border-2 border-ink bg-danger-tint px-2.5 py-1 text-[13px] text-ink line-through"
+                    className="flex shrink-0 items-center gap-1.5 rounded-lg border-2 border-ink bg-danger-tint px-2.5 py-1 text-[13px] whitespace-nowrap text-ink line-through"
                 >
                     <X size={12} className="shrink-0" />
                     {name}

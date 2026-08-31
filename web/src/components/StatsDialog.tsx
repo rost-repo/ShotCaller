@@ -37,7 +37,7 @@ export default function StatsDialog( {autoOpen}: { autoOpen: boolean}) {
             <button
                 onClick={open}
                 aria-label="Statistics"
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg"
+                className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-hairline bg-surface text-fg sm:h-9 sm:w-9"
             >
                 <BarChart3 size={18} />
             </button>
