@@ -85,7 +85,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           <HelpDialog />
           <ArchiveDialog />
           <ThemeToggle />
-          <StatsDialog autoOpen={game.status !== "playing"}/>
+          <StatsDialog autoOpen={!day && game.status !== "playing"}/>
         </div>
       </header>
 
