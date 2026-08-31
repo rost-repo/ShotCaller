@@ -1,6 +1,6 @@
 # Shotcaller
 
-**[Play it →](https://shotcaller-game.vercel.app/)**
+[![Play Shotcaller](https://img.shields.io/badge/play-shotcaller-CF4700?style=for-the-badge)](https://shotcaller-game.vercel.app/)
 
 A daily NBA guessing game. You get one player's shot chart — every spot on the
 court they shot from this season, sized by how often they shot from there and
