@@ -44,7 +44,7 @@ describe("getWrongGuesses", () => {
 });
 
 describe("buildShareText", () => {
-    const FIXED = new Date("2026-07-29T12:00:00Z");
+    const FIXED = "2026-07-29";
 
     it("marks the win and leaves unused slots blank", () => {
         expect(buildShareText(won(["Stephen Curry", CORRECT]), FIXED))

@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     outputFileTracingIncludes: {
-        "/api/today": ["./data/players/**", "./public/data/index.json"],
-        "/api/guess": ["./public/data/index.json"],
+        "/api/game": ["./data/seasons/*/players/**", "./data/pools.json", "./public/data/seasons/*/index.json"],
+        "/api/guess": ["./data/pools.json", "./public/data/seasons/*/index.json"],
     },
 };
 

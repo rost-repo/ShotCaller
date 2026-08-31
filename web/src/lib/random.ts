@@ -11,6 +11,19 @@ export function pickPlayerIndex(count: number, seed: number): number {
     return Math.floor(mulberry32(seed)() * count)
 }
 
+// Fisher-Yates, seeded. Same seed always yields the same order.
+export function shuffled<T>(items: T[], seed: number): T[] {
+    const out = [...items];
+    const rand = mulberry32(seed);
+
+    for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+
+    return out;
+}
+
 export function randomSeed(): number {
     return Math.floor(Math.random() * 2 ** 31)
 }

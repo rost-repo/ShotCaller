@@ -2,6 +2,7 @@ import math, statistics
 from collections import Counter
 import json
 from pathlib import Path
+from datetime import datetime, date
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent                  
@@ -11,6 +12,15 @@ AVERAGES_DIR = ROOT_DIR / "league_averages"
 PUBLIC_DATA_DIR = ROOT_DIR / "web" / "public" / "data"   # servido estaticamente ao navegador
 PRIVATE_DATA_DIR = ROOT_DIR / "web" / "data"             # só o servidor lê
 SHOTS_DIR = ROOT_DIR / "all_shots"
+
+SEASON = "2025-26"
+# Mid-season: endpoints misreport anyone born in the other half.
+AGE_REFERENCE_DATE = date(2026, 2, 1)
+
+# Per-season output; archive mode needs old seasons intact.
+# pools.json stays outside: it spans seasons.
+PUBLIC_SEASON_DIR = PUBLIC_DATA_DIR / "seasons" / SEASON
+PRIVATE_SEASON_DIR = PRIVATE_DATA_DIR / "seasons" / SEASON
 
 HEX_RADIUS = 7.5   # 0.75 feet
 DX = HEX_RADIUS * 2 * math.sin(math.pi / 3)
@@ -134,12 +144,11 @@ def build_league_averages():
 #INFO FUNCTIONS
 
 def _age_from_birthdate(birthdate_str):
-    from datetime import datetime
     if not birthdate_str:
         return None
     born = datetime.fromisoformat(birthdate_str)
-    today = datetime.now()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    ref = AGE_REFERENCE_DATE
+    return ref.year - born.year - ((ref.month, ref.day) < (born.month, born.day))
 
 def _conference_from_team(abbreviation):
     EAST = {"BOS", "BKN", "NYK", "PHI", "TOR", "CHI", "CLE", "DET", "IND",
@@ -201,9 +210,9 @@ def main():
     hex_zone_map = build_hex_zone_map(all_shots)
     hex_league_stats = build_hex_league_stats(all_shots)
 
-    players_dir = PRIVATE_DATA_DIR / "players"
+    players_dir = PRIVATE_SEASON_DIR / "players"
     players_dir.mkdir(parents=True, exist_ok=True)
-    PUBLIC_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    PUBLIC_SEASON_DIR.mkdir(parents=True, exist_ok=True)
     
     index_players = []
 
@@ -214,17 +223,17 @@ def main():
         with open(players_dir / f"{raw['id']}.json", "w", encoding="utf-8") as f:
             json.dump({"id": raw["id"], "hexes": hexes, "zoneTypes": zone_types}, f)
     
-    with open(PUBLIC_DATA_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
+    with open(PUBLIC_SEASON_DIR / "hex_stats.json", "w", encoding="utf-8") as f:
         json.dump(hex_league_stats, f)    
     
     index = {
-        "season": "2025-26",
+        "season": SEASON,
         "players": index_players,
         "leagueAverages": league_averages,
         "leagueOverallFg": league_overall
     }
     
-    with open(PUBLIC_DATA_DIR / "index.json", "w", encoding="utf-8") as f:
+    with open(PUBLIC_SEASON_DIR / "index.json", "w", encoding="utf-8") as f:
         json.dump(index, f)
     
 if __name__  == "__main__":

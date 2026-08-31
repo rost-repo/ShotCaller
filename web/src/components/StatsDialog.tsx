@@ -14,8 +14,16 @@ export default function StatsDialog( {autoOpen}: { autoOpen: boolean}) {
         setStats(loadStats());
         ref.current?.showModal();
     }
+    const sawPlaying = useRef(false);
+
     useEffect(() => {
-        if (!autoOpen) return;
+        // Only fire on the transition to finished, not on every reload of a finished game.
+        if (!autoOpen) {
+            sawPlaying.current = true;
+            return;
+        }
+
+        if (!sawPlaying.current) return;
 
         const timer = setTimeout(() => {
             setStats(loadStats());

@@ -1,5 +1,4 @@
 import type { PlayerSummary } from "./types";
-import { dayKey } from "./day";
 
 export const MAX_GUESSES = 6;
 
@@ -41,13 +40,12 @@ export function getWrongGuesses(state: GameState): string[] {
     return state.status === "won" ? state.guesses.slice(0, -1) : state.guesses;
 }
 
-export function buildShareText(state: GameState, date = new Date()): string {
+export function buildShareText(state: GameState, day: string): string {
     const squares = getPips(state)
         .map((p) => (p === "empty" ? "⬜" : p === "correct" ? "🟩" : "🟥"))
         .join("");
 
     const score = state.status === "won" ? `${state.guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
-    const day = dayKey(date);
 
     return `Shotcaller ${day} ${score}\n${squares}`;
 }

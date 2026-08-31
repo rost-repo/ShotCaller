@@ -1,8 +1,9 @@
 import { MAX_GUESSES } from "./game";
 import { dayKey } from "./day";
-import { Stats } from "./types";
+import { ArchiveResults, Stats } from "./types";
 
 const STATS_KEY = "shotcaller:stats";
+const ARCHIVE_KEY = "shotcaller:archive";
 
 const EMPTY_STATS: Stats = {
     played: 0,
@@ -43,6 +44,28 @@ export function recordResult(won: boolean, guesses: number): void {
             distribution,
             lastCompletedDay: today,
         }));
+    } catch {
+    }
+}
+
+export function loadArchiveResults(): ArchiveResults {
+    try {
+        const raw = localStorage.getItem(ARCHIVE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+}
+
+export function recordDayResult(day: string, won: boolean, guesses: number): void {
+    try {
+        const results = loadArchiveResults();
+
+        // Keep the first outcome: the effect re-runs on every reload of a finished game.
+        if (day in results) return;
+
+        results[day] = won ? guesses : "X";
+        localStorage.setItem(ARCHIVE_KEY, JSON.stringify(results));
     } catch {
     }
 }
