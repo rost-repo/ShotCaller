@@ -18,6 +18,11 @@ export const metadata: Metadata = {
     description: "A daily NBA guessing game. Read the shot chart and guess the NBA player.",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shotcaller",
+    description: "A daily NBA guessing game. Read the shot chart and guess the NBA player.",
+  },
 };
 
 export default function RootLayout({
