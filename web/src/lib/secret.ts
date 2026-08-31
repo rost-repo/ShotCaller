@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { GameIndex, PlayerHexes, PlayerSummary } from "./types";
-import { pickPlayerIndex } from "./random";
-import { dayKey, seedForDay } from "./day";
+import { shuffled } from "./random";
+import { dayKey, daysBetween, seedForDay } from "./day";
 import { GameStatus, HINTS, MAX_GUESSES, MAX_HINTS } from "./game";
 
 const indexCache = new Map<string, GameIndex>();
@@ -72,11 +72,20 @@ export interface DayPlayer {
     season: string;
 }
 
+// Walks a shuffled pool in order, so every player is used before any repeats.
+export function idForDay(pool: Pool, day: string): number {
+    const elapsed = daysBetween(pool.from, day);
+    const cycle = Math.floor(elapsed / pool.ids.length);
+    const position = elapsed % pool.ids.length;
+
+    return shuffled(pool.ids, seedForDay(pool.from) + cycle)[position];
+}
+
 export async function getPlayerForDay(day: string): Promise<DayPlayer> {
     const pools = await loadPools();
     const pool = poolForDay(pools, day);
 
-    const id = pool.ids[pickPlayerIndex(pool.ids.length, seedForDay(day))];
+    const id = idForDay(pool, day);
     const index = await loadIndex(pool.season);
 
     const player = index.players.find((p) => p.id === id);

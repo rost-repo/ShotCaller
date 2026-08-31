@@ -9,3 +9,8 @@ export function dayKey(date = new Date()): string {
 export function seedForDay(day: string): number {
     return Number(day.replaceAll("-", ""));
 }
+
+// Both sides are UTC midnight, so the difference is an exact number of days.
+export function daysBetween(from: string, to: string): number {
+    return Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+}
