@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { GameIndex, Hex, HexStats, ZoneTypes } from "@/lib/types";
 import type { GameState } from "@/lib/game";
-import { recordArchiveResult, recordResult } from "@/lib/storage";
+import { recordDayResult, recordResult } from "@/lib/storage";
 
-interface TodayResponse extends GameState {
+interface GameResponse extends GameState {
+    day: string;
     hexes: Hex[];
     zoneTypes: ZoneTypes;
 }
@@ -17,6 +18,7 @@ export function useGame(season: string, day?: string) {
     const [hexStats, setHexStats] = useState<HexStats | null>(null);
     const [zoneTypes, setZoneTypes] = useState<ZoneTypes | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [playedDay, setPlayedDay] = useState<string | null>(null);
 
     useEffect(() => {
         async function load() {
@@ -31,9 +33,10 @@ export function useGame(season: string, day?: string) {
                     throw new Error("unexpected response");
                 }
 
-                const { hexes, zoneTypes: zones, ...state }: TodayResponse = await todayRes.json();
+                const { hexes, zoneTypes: zones, day: resolved, ...state }: GameResponse = await todayRes.json();
                 setSecretHexes(hexes);
                 setZoneTypes(zones);
+                setPlayedDay(resolved);
                 setGame(state);
                 setIndex(await indexRes.json());
                 setHexStats(await hexStatsRes.json());
@@ -46,14 +49,14 @@ export function useGame(season: string, day?: string) {
     }, [season, day]);
 
     useEffect(() => {
-        if (!game || game.status === "playing") return;
+        if (!game || game.status === "playing" || !playedDay) return;
 
         const won = game.status === "won";
 
-        // Archive keeps its own record; it never touches streaks or distribution.
-        if (day) recordArchiveResult(day, won, game.guesses.length);
-        else recordResult(won, game.guesses.length);
-    }, [game, day]);
+        // Every finished game lands on the calendar; only the daily one moves streaks.
+        recordDayResult(playedDay, won, game.guesses.length);
+        if (!day) recordResult(won, game.guesses.length);
+    }, [game, day, playedDay]);
 
     const guess = useCallback(async (name: string) => {
         try {
@@ -71,6 +74,6 @@ export function useGame(season: string, day?: string) {
         }
     }, [day]);
 
-    return { index, game, secretHexes, hexStats, zoneTypes, guess, error };
+    return { index, game, secretHexes, hexStats, zoneTypes, guess, error, playedDay };
 
 }

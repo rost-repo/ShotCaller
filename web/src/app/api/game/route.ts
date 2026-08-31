@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     const { status, hints } = deriveGame(player, guesses);
 
     return NextResponse.json({
+        day,
         hexes,
         zoneTypes,
         guesses,

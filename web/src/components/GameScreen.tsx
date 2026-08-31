@@ -14,7 +14,6 @@ import HelpDialog from "@/components/HelpDialog";
 import StatsDialog from "@/components/StatsDialog";
 import ArchiveDialog from "@/components/ArchiveDialog";
 import { useGame } from "@/lib/useGame";
-import { dayKey } from "@/lib/day";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -34,7 +33,7 @@ function formatDay(day: string): string {
 }
 
 export default function GameScreen({ season, day }: GameScreenProps) {
-const { index, game, secretHexes, hexStats, zoneTypes, guess, error } = useGame(season, day);
+const { index, game, secretHexes, hexStats, zoneTypes, guess, error, playedDay } = useGame(season, day);
 const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
   if (error && !game) {
     return (
@@ -54,7 +53,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
       </main>
     );
   }
-  if (!index || !game || !secretHexes || !hexStats || !zoneTypes) {
+  if (!index || !game || !secretHexes || !hexStats || !zoneTypes || !playedDay) {
     return (
       <main className="mx-auto flex w-full max-w-230 flex-col items-center px-5 pt-7">
         <div className="h-96 w-full animate-pulse rounded-3xl border-[3px] border-ink bg-surface-2 shadow-sticker-lg" />
@@ -132,7 +131,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
               playerName={game.answer ?? ""}
               guessCount={game.guesses.length}
               pips={getPips(game)}
-              shareText={buildShareText(game, day ?? dayKey())}
+              shareText={buildShareText(game, playedDay)}
             />
           )}
         </div>

@@ -57,7 +57,7 @@ export function loadArchiveResults(): ArchiveResults {
     }
 }
 
-export function recordArchiveResult(day: string, won: boolean, guesses: number): void {
+export function recordDayResult(day: string, won: boolean, guesses: number): void {
     try {
         const results = loadArchiveResults();
 

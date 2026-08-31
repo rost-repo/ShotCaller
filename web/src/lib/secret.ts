@@ -72,11 +72,16 @@ export interface DayPlayer {
     season: string;
 }
 
-// Walks a shuffled pool in order, so every player is used before any repeats.
+// Days per shuffle. Shorter than the pool, so a cycle never consumes every player.
+export const CYCLE_LENGTH = 65;
+
+// Walks a shuffled pool in order, so no player repeats within a cycle.
 export function idForDay(pool: Pool, day: string): number {
+    const length = Math.min(CYCLE_LENGTH, pool.ids.length);
+
     const elapsed = daysBetween(pool.from, day);
-    const cycle = Math.floor(elapsed / pool.ids.length);
-    const position = elapsed % pool.ids.length;
+    const cycle = Math.floor(elapsed / length);
+    const position = elapsed % length;
 
     return shuffled(pool.ids, seedForDay(pool.from) + cycle)[position];
 }

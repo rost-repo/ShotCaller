@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveGame, addGuess, poolForDay, idForDay, Pool } from "./secret";
+import { deriveGame, addGuess, poolForDay, idForDay, CYCLE_LENGTH, Pool } from "./secret";
 import { MAX_GUESSES, MAX_HINTS } from "./game";
 import type { PlayerSummary } from "./types";
 
@@ -114,6 +114,13 @@ describe("idForDay", () => {
 
     it("is deterministic for the same day", () => {
         expect(idForDay(cyclePool, "2026-03-05")).toBe(idForDay(cyclePool, "2026-03-05"));
+    });
+
+    it("uses only CYCLE_LENGTH players when the pool is bigger", () => {
+        const big: Pool = { from: "2026-01-01", season: "2025-26", ids: Array.from({ length: 130 }, (_, i) => i + 1) };
+        const drawn = Array.from({ length: CYCLE_LENGTH }, (_, i) => idForDay(big, addDays(big.from, i)));
+
+        expect(new Set(drawn).size).toBe(CYCLE_LENGTH);
     });
 
     it("only draws ids that are in the pool", () => {
