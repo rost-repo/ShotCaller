@@ -13,6 +13,7 @@ import GameOverPanel from "@/components/GameOverPanel";
 import HelpDialog from "@/components/HelpDialog";
 import StatsDialog from "@/components/StatsDialog";
 import ArchiveDialog from "@/components/ArchiveDialog";
+import SiteFooter from "@/components/SiteFooter";
 import { useGame } from "@/lib/useGame";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -170,6 +171,7 @@ const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
           disabled={game.status !== "playing"}
         />
       </div>
+      <SiteFooter />
     </main>
     );
 

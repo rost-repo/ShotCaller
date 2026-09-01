@@ -1,6 +1,7 @@
 import type { PlayerSummary } from "./types";
 
 export const MAX_GUESSES = 6;
+const SITE_URL = "https://shotcaller-game.vercel.app";
 
 export type GameStatus = "playing" | "won" | "lost";
 
@@ -47,5 +48,5 @@ export function buildShareText(state: GameState, day: string): string {
 
     const score = state.status === "won" ? `${state.guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
 
-    return `Shotcaller ${day} ${score}\n${squares}`;
+    return `Shotcaller ${day} ${score}\n${squares}\n${SITE_URL}`;
 }

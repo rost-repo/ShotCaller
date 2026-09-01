@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next";
 import { Archivo_Black, Public_Sans, IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const archivoBlack = Archivo_Black({ variable: "--ff-display", subsets: ["latin"], weight: "400" });
@@ -46,6 +47,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         {children}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3082693642546440"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
         <Analytics />
         <SpeedInsights />
       </body>

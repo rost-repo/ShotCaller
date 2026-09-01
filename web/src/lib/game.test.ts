@@ -48,12 +48,12 @@ describe("buildShareText", () => {
 
     it("marks the win and leaves unused slots blank", () => {
         expect(buildShareText(won(["Stephen Curry", CORRECT]), FIXED))
-            .toBe("Shotcaller 2026-07-29 2/6\n🟥🟩⬜⬜⬜⬜");
+            .toBe("Shotcaller 2026-07-29 2/6\n🟥🟩⬜⬜⬜⬜\nhttps://shotcaller-game.vercel.app");
     });
 
     it("uses X on a loss", () => {
         expect(buildShareText(lost(allWrong), FIXED))
-            .toBe("Shotcaller 2026-07-29 X/6\n🟥🟥🟥🟥🟥🟥");
+            .toBe("Shotcaller 2026-07-29 X/6\n🟥🟥🟥🟥🟥🟥\nhttps://shotcaller-game.vercel.app");
     });
 
     it("never leaks the player name", () => {
