@@ -76,4 +76,32 @@ describe("POST /api/guess", () => {
         expect(mockWriteSession).not.toHaveBeenCalled();
         expect(mockCookieForDay).toHaveBeenCalledWith(DAY);
     });
+
+    it("logs an accepted guess and a completed game", async () => {
+        const guesses = ["Stephen Curry", PLAYER.name];
+        const log = vi.spyOn(console, "info").mockImplementation(() => undefined);
+        mockAddGuess.mockReturnValue(guesses);
+        mockDeriveGame
+            .mockReturnValueOnce({ status: "playing", hints: [] })
+            .mockReturnValueOnce({ status: "won", hints: [] });
+
+        const response = await POST(new Request("http://localhost/api/guess", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name: PLAYER.name }),
+        }));
+
+        expect(response.status).toBe(200);
+        expect(log).toHaveBeenNthCalledWith(1, "guess submitted", {
+            day: DAY,
+            guess: PLAYER.name,
+            attempt: 2,
+        });
+        expect(log).toHaveBeenNthCalledWith(2, "game finished", {
+            day: DAY,
+            result: "won",
+            attempts: 2,
+        });
+        log.mockRestore();
+    });
 });

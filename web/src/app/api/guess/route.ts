@@ -59,6 +59,20 @@ export async function POST(request: Request) {
         throw error;
     }
 
+    console.info("guess submitted", {
+        day,
+        guess: name,
+        attempt: guesses.length,
+    });
+
+    if (status !== "playing") {
+        console.info("game finished", {
+            day,
+            result: status,
+            attempts: guesses.length,
+        });
+    }
+
     return NextResponse.json({
         guesses,
         status,

@@ -7,6 +7,11 @@ const links = [
         icon: <span aria-hidden="true" className="font-sans text-[17px] font-bold leading-none">in</span>,
     },
     {
+        href: "https://x.com/shotcallergame",
+        label: "X (Twitter)",
+        icon: <span aria-hidden="true" className="text-[18px] leading-none">𝕏</span>,
+    },
+    {
         href: "https://buymeacoffee.com/shotcaller",
         label: "Buy Me a Coffee",
         icon: <Coffee size={18} aria-hidden="true" />,
