@@ -1,7 +1,6 @@
 "use client";
 
 import { Lock } from "lucide-react";
-import type { PlayerSummary } from "@/lib/types";
 import { HINTS } from "@/lib/game";
 
 interface HintPanelProps {

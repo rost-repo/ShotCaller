@@ -10,6 +10,7 @@ const ibmPlexMono = IBM_Plex_Mono({ variable: "--ff-stat", subsets: ["latin"], w
 const spaceGrotesk = Space_Grotesk({ variable: "--ff-wordmark", subsets: ["latin"], weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://shotcaller-game.vercel.app"),
   title: "Shotcaller",
   description:
     "A daily NBA guessing game. Read the shot chart and guess the NBA player.",
