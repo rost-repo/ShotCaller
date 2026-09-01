@@ -39,6 +39,13 @@ export async function POST(request: Request) {
     }
 
     const previous = session?.day === day ? session.guesses : [];
+    const current = deriveGame(player, previous);
+
+    // The client disables its input after the game ends, but the API must
+    // enforce that invariant too: callers can submit requests directly.
+    if (current.status !== "playing") {
+        return NextResponse.json({ error: "game already finished" }, { status: 409 });
+    }
 
     const guesses = addGuess(previous, name);
     const { status, hints } = deriveGame(player, guesses);
