@@ -59,11 +59,16 @@ export function useGame(season: string, day?: string) {
     }, [game, day, playedDay]);
 
     const guess = useCallback(async (name: string) => {
+        if (!playedDay) {
+            setError("Could not register guess.");
+            return;
+        }
+
         try {
             const res = await fetch("/api/guess", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify(day ? { name, day } : { name }),
+                body: JSON.stringify({ name, day: playedDay }),
             });
             if (!res.ok) throw new Error("Guess Declined");
 
@@ -72,7 +77,7 @@ export function useGame(season: string, day?: string) {
         } catch {
             setError("Could not register guess.");
         }
-    }, [day]);
+    }, [playedDay]);
 
     return { index, game, secretHexes, hexStats, zoneTypes, guess, error, playedDay };
 

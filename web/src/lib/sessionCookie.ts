@@ -1,12 +1,11 @@
 import { cookies } from "next/headers";
 import { signSession, verifySession, type SessionPayload } from "./sessions";
 
-const DAILY_COOKIE = "shotcaller_session"
-const ARCHIVE_COOKIE = "shotcaller_archive"
+const SESSION_COOKIE_PREFIX = "shotcaller_session_";
 
-// Separate jars: playing an old day must not touch the daily game in progress.
-export function cookieForDay(day: string, today: string): string {
-    return day === today ? DAILY_COOKIE : ARCHIVE_COOKIE;
+// A game keeps the same cookie after UTC midnight, even if its page remains open.
+export function cookieForDay(day: string): string {
+    return `${SESSION_COOKIE_PREFIX}${day}`;
 }
 
 export async function readSession(name: string): Promise<SessionPayload | null> {

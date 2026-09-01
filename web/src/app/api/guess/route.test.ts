@@ -38,12 +38,13 @@ vi.mock("@/lib/apiErrors", () => ({ toApiErrorResponse: vi.fn() }));
 
 import { POST } from "./route";
 import { addGuess, deriveGame, getPlayerForDay, loadIndex } from "@/lib/secret";
-import { readSession, writeSession } from "@/lib/sessionCookie";
+import { cookieForDay, readSession, writeSession } from "@/lib/sessionCookie";
 
 const mockAddGuess = vi.mocked(addGuess);
 const mockDeriveGame = vi.mocked(deriveGame);
 const mockGetPlayerForDay = vi.mocked(getPlayerForDay);
 const mockLoadIndex = vi.mocked(loadIndex);
+const mockCookieForDay = vi.mocked(cookieForDay);
 const mockReadSession = vi.mocked(readSession);
 const mockWriteSession = vi.mocked(writeSession);
 
@@ -73,5 +74,6 @@ describe("POST /api/guess", () => {
         await expect(response.json()).resolves.toEqual({ error: "game already finished" });
         expect(mockAddGuess).not.toHaveBeenCalled();
         expect(mockWriteSession).not.toHaveBeenCalled();
+        expect(mockCookieForDay).toHaveBeenCalledWith(DAY);
     });
 });

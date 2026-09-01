@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Unknown Player" }, { status: 400 });
     }
 
-    const cookie = cookieForDay(day, today);
+    const cookie = cookieForDay(day);
     let session;
 
     try {

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     let session;
 
     try {
-        session = await readSession(cookieForDay(day, today));
+        session = await readSession(cookieForDay(day));
     } catch (error) {
         const response = toApiErrorResponse(error);
         if (response) return response;
