@@ -108,6 +108,7 @@ export default function ArchiveDialog() {
                                     <Link
                                         key={day}
                                         href={`/archive/${day}`}
+                                        prefetch={false}
                                         onClick={() => ref.current?.close()}
                                         className={`flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-ink text-[13px] leading-none ${
                                             score === undefined
